@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
+<!-- Programmed by Zafer Akçalı, MD-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Display Authors Quertiles of Web of Science Publications</title>
+    
+<!-- https://github.com/mholt/PapaParse-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js"></script>	
+
+<!-- // https://github.com/eligrey/FileSaver.js-->
+<script src="https://cdn.jsdelivr.net/g/filesaver.js"></script> 
+
+<script src="eissnq1.txt"></script>
+<script src="eissnq2.txt"></script>
+<script src="eissnq3.txt"></script>
+<script src="eissnq4.txt"></script>
+<script src="issnq1.txt"></script>
+<script src="issnq2.txt"></script>
+<script src="issnq3.txt"></script>
+<script src="issnq4.txt"></script>
+</head>
+<body>
+<label for="myfile">Select a csv file:</label>
+<input type="file" id="csvfile" name="Csv File">
+<button onclick="readFunction()">Read</button> <br/> <br/>
+
+Authors publications <br />
+<textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br /> 
+<button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
+<button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
+<button id="saveBtn" disabled onclick="saveFunction()">Save</button>
+<br/>
+Default value for unknown Q:&nbsp;<input type="text" id="qxValue" value="Q?" maxlength="2" size="2"><br>
+Default value for University: &nbsp;&nbsp;<input type="text" id="defaultUniv" value="Baskent Univ"><br>
+Include Q1 <input type="checkbox" id="q1Box" checked="true">
+Q2 <input type="checkbox" id="q2Box" checked="true">
+Q3 <input type="checkbox" id="q3Box" checked="true">
+Q4 <input type="checkbox" id="q4Box" checked="true">
+Q? <input type="checkbox" id="qxBox" checked="true"> <br/> <br/>
+
+Document Types  <br/>
+Check ALL <input type="checkbox" id="allDocumentsBox" checked="true" onclick="selectAllDocuments()"> <br/> 
+Include Article: <input type="checkbox" id="articleBox" checked="true">
+Article-EA <input type="checkbox" id="articleEABox" checked="true">
+Article-PP <input type="checkbox" id="articlePPBox" checked="true"> <br/>
+Include Biographical: <input type="checkbox" id="biographicalBox" checked="true">	
+Editorial Material <input type="checkbox" id="editorialBox" checked="true">  <br/>
+Include  Letter: <input type="checkbox" id="letterBox" checked="true">
+Letter-EA <input type="checkbox" id="letterEABox" checked="true"> <br/>
+Include Meeting Abstract: <input type="checkbox" id="meetingBox" checked="true">
+Proceedings Paper <input type="checkbox" id="proceedingsBox" checked="true"><br/>
+Include Retraction: <input type="checkbox" id="retractionBox" checked="true">
+Correction: <input type="checkbox" id="correctionBox" checked="true"> <br/>
+Include Review: <input type="checkbox" id="reviewBox" checked="true">
+Review-EA <input type="checkbox" id="reviewEABox" checked="true">
+Book Review <input type="checkbox" id="bookReviewBox" checked="true">
+<br/>
+<script>
+// global scope
+var csvtext="";
+var wosPrefix = 'https://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=Publons&SrcAuth=Publons_CEL&KeyUT='
+var wosPostfix = '&DestLinkType=FullRecord&DestApp=WOS_CPL'
+var doiPrefix = 'https://doi.org/'
+
+
+function readFunction() {
+document.getElementById('publicationsArea').value=""; // clear textarea
+document.getElementById('copyBtn').disabled = true;  // disable copy button
+document.getElementById('convBtn').disabled = true;  // disable convert button
+document.getElementById('saveBtn').disabled = true;  // disable save button
+
+var file = document.getElementById('csvfile').files[0]; //get filename
+var reader = new FileReader(); // html5 
+	reader.onload = (function(file) {
+	return function(e) {
+	csvtext = this.result;	//read from csv file
+		document.getElementById('publicationsArea').value=csvtext; // show in textarea
+		document.getElementById('convBtn').disabled = false;  // enable convert button
+           }
+		})(file);
+		reader.readAsText(file);
+
+}
+
+function convertFunction() {
+var pubtext="NS;Author name;Author address;Quartile;Times cited;Article type;Authors;Aticle title;Article source;Year;Volume-issue-page;WOS number;WOS link;Doi link\n";
+var university = document.getElementById('defaultUniv').value
+var qx=document.getElementById('qxValue').value
+var pubArray= new Array ([]); // an array, which contains publications
+var authorArray = new Array ([]); // an array, which contains authors with their publication
+var addresses="";
+var department = "";
+var nauthor = 0; // number of authors 
+
+document.getElementById('publicationsArea').value=""; // clear textarea
+document.getElementById('copyBtn').disabled = true;  // disable copy button
+document.getElementById('saveBtn').disabled = true;  // disable save button
+	results = Papa.parse(csvtext, {	//parse from csv text
+	header: true,
+	delimiter: ";",
+	skipEmptyLines: true
+});
+nrows = results.data.length; // number of rows in csv file
+//console.log (results.meta)
+
+// initialise every row of a multidimentional array
+for (var i=0; i<nrows; i++) {
+	pubArray.push([0]); // create rows of multidimentional array
+	pubArray[i][0]="0"; // initialise first member of the row
+ }
+
+for (var i=0; i<nrows; i++) { // for each publication
+//	displayPub=true;
+	issn = results.data[i]['ISSN']
+	eissn = results.data[i]['eISSN']
+	quartile = qx // unknown, not in the list
+	if (issnq1.indexOf(issn) != -1 )// if issnq1 contains issn)
+		{quartile = 'Q1'}
+	else if (eissnq1.indexOf(eissn) != -1 )// if eissnq1 contains eissn)
+		{quartile = 'Q1'}
+	else if (issnq2.indexOf(issn) != -1 )// if issnq2 contains issn)
+		{quartile = 'Q2'}
+	else if (eissnq2.indexOf(eissn) != -1 )// if eissnq2 contains eissn)
+		{quartile = 'Q2'}
+	else if (issnq3.indexOf(issn) != -1 )// if issnq1 contains issn)
+		{quartile = 'Q3'}
+	else if (eissnq3.indexOf(eissn) != -1 )// if eissnq3 contains eissn)
+		{quartile = 'Q3'}
+	else if (issnq4.indexOf(issn) != -1 )// if issnq1 contains issn)
+		{quartile = 'Q4'}
+	else if (eissnq4.indexOf(eissn) != -1 )// if eissnq3 contains eissn)
+		{quartile = 'Q4'}
+	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
+	else if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
+	else if (document.getElementById('q3Box').checked == false && quartile == 'Q3') { continue; }
+	else if (document.getElementById('q4Box').checked == false && quartile == 'Q4') { continue; }
+	else if (document.getElementById('q4Box').checked == false && quartile == qx) { continue; }		
+
+	documentType=results.data[i]['Document Type']
+	if (document.getElementById('articleBox').checked == false && documentType == 'Article') { continue; }
+	else if (document.getElementById('articleEABox').checked == false && documentType == 'Article; Early Access') { continue; }
+	else if (document.getElementById('articlePPBox').checked == false && documentType == 'Article; Proceedings Paper') { continue; }
+	else if (document.getElementById('biographicalBox').checked == false && documentType == 'Biographical-Item') { continue; }
+	else if (document.getElementById('editorialBox').checked == false && documentType == 'Editorial Material') { continue; }
+	else if (document.getElementById('letterBox').checked == false && documentType == 'Letter') { continue; }
+	else if (document.getElementById('letterEABox').checked == false && documentType == 'Letter; Early Access') { continue; }
+	else if (document.getElementById('meetingBox').checked == false && documentType == 'Meeting Abstract') { continue; }
+	else if (document.getElementById('proceedingsBox').checked == false && documentType == 'Proceedings Paper') { continue; }
+	else if (document.getElementById('retractionBox').checked == false && documentType == 'Retraction') { continue; }
+	else if (document.getElementById('correctionBox').checked == false && documentType == 'Correction') { continue; }
+	else if (document.getElementById('reviewBox').checked == false && documentType == 'Review') { continue; }	
+	else if (document.getElementById('reviewEABox').checked == false && documentType == 'Review; Early Access') { continue; }	
+	else if (document.getElementById('bookReviewBox').checked == false && documentType == 'Book Review') { continue; }
+
+	weird = '' // assume each article with normal address format and author format
+	addresses = results.data[i].Addresses // deal with this text
+	if (addresses == '') { // if Addresses field if empty
+		addresses = '[' + results.data[i]['Authors'] + '] ' +'Unkonown;'
+		weird = '*'
+		}
+	
+	if (addresses.indexOf("[")==-1) { // if Addresses field doesn't contain names
+		tempAuthor = results.data[i]['Authors'].replace(/;/g, '-') // regexp for all
+		tempAddresses = addresses.replace(/;/g, '-') //regexp for all
+		weird = '*'  // someting weird in Addresses column, check them by marking with (*)
+//		console.log (addresses)
+//		console.log (tempAddresses)
+		addresses = '['+tempAuthor+'] '+ tempAddresses
+		}
+		
+	if (addresses.substring(0,1) != '[' ) {// if Addresses field doesn't start with [
+		addresses ='[unknown] ' + addresses
+		weird = '*' // someting weird in Addresses column, check them by marking with (*)
+		}
+	authors = addresses.slice(1).split("; [") //delete [, then go to first author of next address
+		
+	for (j=0;j<authors.length;j++) { // for each address
+	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains department
+	author = department[0].split ("; ") // 
+	if (department[1].indexOf(university)!=-1) { // if Address contains default University
+		for (k=0;k<author.length;k++) { // for each author
+//			console.log (author[k]) // one outhor name at a time
+			authorArray.push ([0]); // create rows of multidimentional array
+			authorArray[nauthor][0]= author[k]; // name of author
+			authorArray[nauthor][1]= department[1]; // address of author
+			authorArray[nauthor][2] = quartile
+			authorArray[nauthor][3] = results.data[i]['Times Cited, WoS Core']
+			authorArray[nauthor][4] = results.data[i]['Document Type']
+			authorArray[nauthor][5] = results.data[i]['Authors']
+			authorArray[nauthor][6] = results.data[i]['Article Title']
+			authorArray[nauthor][7] = results.data[i]['Source Title']
+			pyear = results.data[i]['Publication Year']
+				if (pyear == '') {
+					accessdate = results.data[i]['Early Access Date'].split(' ') // seperate month and year
+					pyear = accessdate[1] // second part of accessdate is year
+					}
+			authorArray[nauthor][8] = pyear
+			authorArray[nauthor][9] = results.data[i]['Volume']
+			issue = results.data[i]['Issue']
+				if (issue != '') {
+					issue = ':('+issue+')' // display (issue) if really exists
+					}
+					else if (results.data[i]['Volume'] != '') { // if volume exists, but issue is not
+						issue = ':'
+						}
+			authorArray[nauthor][10] = issue
+			authorArray[nauthor][11] = results.data[i]['Start Page']
+			authorArray[nauthor][12] = results.data[i]['End Page']
+			authorArray[nauthor][13] = results.data[i]['UT (Unique WOS ID)']
+//			console.log (results.data[i]['UT (Unique WOS ID)'])
+			authorArray[nauthor][14] = results.data[i]['DOI']
+			
+			{ // add publication to text area
+				pubtext = pubtext+weird
+				+";"+authorArray[nauthor][0] 
+				+";"+"\""+authorArray[nauthor][1]+"\"" // address of author, between " and "
+				+";"+ authorArray[nauthor][2] // quartile
+				+";"+ authorArray[nauthor][3] // times cited
+				+";"+"\""+authorArray[nauthor][4]+"\"" // Document type between " " not to confuse csv
+				+";"+"\""+authorArray[nauthor][5]+"\"" // Authors displayed between " and " not to confuse csv
+				+";"+"\""+authorArray[nauthor][6]+"\"" // Article title between " and "not to confuse csv
+				+";"+authorArray[nauthor][7] // source title
+				+";"+authorArray[nauthor][8] // publication year
+				+";"+"\""+authorArray[nauthor][9]+authorArray[nauthor][10]+authorArray[nauthor][11]+'-'+authorArray[nauthor][12]+"\"" // Volume, Issue, and page numbers displayed between " and "
+				+";"+authorArray[nauthor][13] //WOS
+				+";"+wosPrefix+authorArray[nauthor][13]+wosPostfix // WOS link
+				+";"+doiPrefix+authorArray[nauthor][14]		//DOI link	
+				+"\n"
+			} // add publication to text area
+			nauthor++;
+			}
+//	console.log (department[1]) // if first word of department name is Baskent
+	} 
+	}
+
+}
+document.getElementById('publicationsArea').value=pubtext;
+document.getElementById('copyBtn').disabled = false; // enable copy button
+document.getElementById('saveBtn').disabled = false;  // enable save button
+document.getElementById('convBtn').disabled = true;  // disable convert button
+}
+
+function selectAllDocuments() {
+var checkBox = document.getElementById('allDocumentsBox');
+if (checkBox.checked == true) { 
+	document.getElementById('articleBox').checked = true;
+	document.getElementById('articleEABox').checked = true;
+	document.getElementById('articlePPBox').checked = true;
+	document.getElementById('biographicalBox').checked = true;
+	document.getElementById('editorialBox').checked = true;
+	document.getElementById('letterBox').checked = true;
+	document.getElementById('letterEABox').checked = true;
+	document.getElementById('meetingBox').checked = true;
+	document.getElementById('proceedingsBox').checked = true;
+	document.getElementById('retractionBox').checked = true;
+	document.getElementById('correctionBox').checked = true;
+	document.getElementById('reviewBox').checked = true;
+	document.getElementById('reviewEABox').checked = true;
+	document.getElementById('bookReviewBox').checked = true;
+	}	
+	else {	
+	document.getElementById('articleBox').checked = false;
+	document.getElementById('articleEABox').checked = false;
+	document.getElementById('articlePPBox').checked = false;
+	document.getElementById('biographicalBox').checked = false;
+	document.getElementById('editorialBox').checked = false;
+	document.getElementById('letterBox').checked = false;
+	document.getElementById('letterEABox').checked = false;
+	document.getElementById('meetingBox').checked = false;
+	document.getElementById('proceedingsBox').checked = false;
+	document.getElementById('retractionBox').checked = false;
+	document.getElementById('correctionBox').checked = false;
+	document.getElementById('reviewBox').checked = false;
+	document.getElementById('reviewEABox').checked = false;
+	document.getElementById('bookReviewBox').checked = false;
+
+ 	}
+}
+function copyFunction() {
+	document.getElementById('publicationsArea').select();
+	document.execCommand("copy");
+	document.getElementById('copyBtn').disabled = true;  // disable copy button
+	document.getElementById('convBtn').disabled = false;  // enable convert button
+}
+
+function saveFunction() {
+var blob = new Blob([document.getElementById('publicationsArea').value],
+                { type: "text/plain;charset=utf-8" });
+saveAs(blob, "output.csv");
+}
+
+</script>
+</body>
+</html>
