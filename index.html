@@ -33,7 +33,7 @@ Authors publications <br />
 <button id="saveBtn" disabled onclick="saveFunction()">Save</button>
 <br/>
 Default value for unknown Q:&nbsp;<input type="text" id="qxValue" value="Q?" maxlength="2" size="2"><br>
-Default value for University: &nbsp;&nbsp;<input type="text" id="defaultUniv" value="Baskent Univ"><br>
+Default value for University: &nbsp;&nbsp;<input type="text" id="defaultUniv" value="Baskent Univ"><input type="text" id="defaultUniv2" value="Univ Baskent"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
@@ -84,7 +84,8 @@ var reader = new FileReader(); // html5
 
 function convertFunction() {
 var pubtext="NS;Author name;Author address;Quartile;Times cited;Article type;Authors;Aticle title;Article source;Year;Volume-issue-page;WOS number;WOS link;Doi link\n";
-var university = document.getElementById('defaultUniv').value
+var university = document.getElementById('defaultUniv').value  // Baskent Univ
+var university2 = document.getElementById('defaultUniv2').value // Univ Baskent
 var qx=document.getElementById('qxValue').value
 var pubArray= new Array ([]); // an array, which contains publications
 var authorArray = new Array ([]); // an array, which contains authors with their publication
@@ -108,7 +109,6 @@ for (var i=0; i<nrows; i++) {
 	pubArray.push([0]); // create rows of multidimentional array
 	pubArray[i][0]="0"; // initialise first member of the row
  }
-
 for (var i=0; i<nrows; i++) { // for each publication
 	issn = results.data[i]['ISSN']
 	eissn = results.data[i]['eISSN']
@@ -121,7 +121,6 @@ for (var i=0; i<nrows; i++) { // for each publication
 		{quartile = 'Q3';}
 	if (issnq4.includes(issn) || eissnq4.includes(eissn))
 		{quartile = 'Q4';}
-
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
 	if (document.getElementById('q3Box').checked == false && quartile == 'Q3') { continue; }
@@ -144,20 +143,18 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (document.getElementById('reviewEABox').checked == false && documentType == 'Review; Early Access') { continue; }	
 	if (document.getElementById('bookReviewBox').checked == false && documentType == 'Book Review') { continue; }
 
-	weird = '' // assume each article with normal address format and author format
+	weird = '' // assume each article in shape of normal address format and author format
 	addresses = results.data[i].Addresses // deal with this text
 	if (addresses == '') { // if Addresses field if empty
 		addresses = '[' + results.data[i]['Authors'] + '] ' +'Unkonown;'
-		weird = '*'
+		weird = '*'  // check output 
 		}
-	
 	if (addresses.indexOf("[")==-1) { // if Addresses field doesn't contain names
 		tempAuthor = results.data[i]['Authors'].replace(/;/g, '-') // regexp for all
 		tempAddresses = addresses.replace(/;/g, '-') //regexp for all
 		weird = '*'  // someting weird in Addresses column, check them by marking with (*)
 		addresses = '['+tempAuthor+'] '+ tempAddresses
 		}
-		
 	if (addresses.substring(0,1) != '[' ) {// if Addresses field doesn't start with [
 		addresses ='[unknown] ' + addresses
 		weird = '*' // someting weird in Addresses column, check them by marking with (*)
@@ -167,7 +164,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	for (j=0;j<authors.length;j++) { // for each address
 	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains department
 	author = department[0].split ("; ") // 
-	if (department[1].indexOf(university)!=-1) { // if Address contains default University
+	if (department[1].indexOf(university)!=-1 || department[1].indexOf(university2)!=-1) { // if Address contains default University
 		for (k=0;k<author.length;k++) { // for each author
 			authorArray.push ([0]); // create rows of multidimentional array
 			authorArray[nauthor][0]= author[k]; // name of author
@@ -219,14 +216,12 @@ for (var i=0; i<nrows; i++) { // for each publication
 			}
 		} 
 	}
-
 }
 document.getElementById('publicationsArea').value=pubtext;
 document.getElementById('copyBtn').disabled = false; // enable copy button
 document.getElementById('saveBtn').disabled = false;  // enable save button
 document.getElementById('convBtn').disabled = true;  // disable convert button
 }
-
 function selectAllDocuments() {
 var checkBox = document.getElementById('allDocumentsBox');
 if (checkBox.checked == true) { 
@@ -260,22 +255,19 @@ if (checkBox.checked == true) {
 	document.getElementById('reviewBox').checked = false;
 	document.getElementById('reviewEABox').checked = false;
 	document.getElementById('bookReviewBox').checked = false;
-
  	}
 }
 function copyFunction() {
 	document.getElementById('publicationsArea').select();
 	document.execCommand("copy");
-	document.getElementById('copyBtn').disabled = true;  // disable copy button
 	document.getElementById('convBtn').disabled = false;  // enable convert button
 }
-
 function saveFunction() {
 var blob = new Blob([document.getElementById('publicationsArea').value],
                 { type: "text/plain;charset=utf-8" });
 saveAs(blob, "output.csv");
+	document.getElementById('convBtn').disabled = false;  // enable convert button
 }
-
 </script>
 </body>
 </html>
