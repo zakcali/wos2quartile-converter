@@ -33,7 +33,7 @@ Authors publications <br />
 <button id="saveBtn" disabled onclick="saveFunction()">Save</button>
 <br/>
 Default value for unknown Q:&nbsp;<input type="text" id="qxValue" value="Q?" maxlength="2" size="2"><br>
-Default value for University: &nbsp;&nbsp;<input type="text" id="defaultUniv" value="Baskent Univ"><input type="text" id="defaultUniv2" value="Univ Baskent"><br>
+Default value for University: &nbsp;&nbsp;<input type="text" id="defaultUniv" value="Baskent Univ">&nbsp;<input type="text" id="defaultUniv2" value="Univ Baskent"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
@@ -164,7 +164,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	for (j=0;j<authors.length;j++) { // for each address
 	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains department
 	author = department[0].split ("; ") // 
-	if (department[1].indexOf(university)!=-1 || department[1].indexOf(university2)!=-1) { // if Address contains default University
+	if (department[1].includes(university) || department[1].includes(university2)) { // if Address contains default University
 		for (k=0;k<author.length;k++) { // for each author
 			authorArray.push ([0]); // create rows of multidimentional array
 			authorArray[nauthor][0]= author[k]; // name of author
