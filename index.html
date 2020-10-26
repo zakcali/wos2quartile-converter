@@ -20,6 +20,8 @@
 <script src="issnq2.txt"></script>
 <script src="issnq3.txt"></script>
 <script src="issnq4.txt"></script>
+<script src="namedict.txt"></script>
+
 </head>
 <body>
 <label for="myfile">Select a csv file:</label>
@@ -167,6 +169,12 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (department[1].includes(university) || department[1].includes(university2)) { // if Address contains default University
 		for (k=0;k<author.length;k++) { // for each author
 			authorArray.push ([0]); // create rows of multidimentional array
+				for (var c=0; c<nameDict.length; c+=2) { // first item to last item
+					if ( author[k]==nameDict[c]) {  // if author name is misspelled, then correct it
+						author[k]=nameDict[c+1] 
+						break; } // don't continue to search 
+					}
+	
 			authorArray[nauthor][0]= author[k]; // name of author
 			authorArray[nauthor][1]= department[1]; // address of author
 			authorArray[nauthor][2] = quartile
