@@ -21,6 +21,9 @@
 <script src="issnq3.txt"></script>
 <script src="issnq4.txt"></script>
 <script src="namedict.txt"></script>
+<script src="issnahci.txt"></script>
+<script src="eissnahci.txt"></script>
+<script src="addresslist.txt"></script>
 </head>
 <body>
 <label for="myfile">Select a csv file:</label>
@@ -33,12 +36,13 @@ Authors publications <br />
 <button id="saveBtn" disabled onclick="saveFunction()">Save</button>
 <br/>
 Default value for unknown Q:&nbsp;<input type="text" id="qxValue" value="Q?" maxlength="2" size="2"><br>
-Default values for University: <input type="text" id="defaultUniv" value="Baskent Univ">&nbsp;<input type="text" id="defaultUniv2" value="Univ Baskent"><br>
+
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
 Q4 <input type="checkbox" id="q4Box" checked="true">
-Q? <input type="checkbox" id="qxBox" checked="true"> <br/> <br/>
+Q? <input type="checkbox" id="qxBox" checked="true"> 
+AHCI <input type="checkbox" id="ahBox" checked="true"><br/> <br/>
 
 Document Types  <br/>
 Check ALL <input type="checkbox" id="allDocumentsBox" checked="true" onclick="selectAllDocuments()"> <br/> 
@@ -84,8 +88,6 @@ var reader = new FileReader(); // html5
 
 function convertFunction() {
 var pubtext="NS;Author name;Author address;Quartile;Times cited;Article type;Authors;Aticle title;Article source;Year;Volume-issue-page;WOS number;WOS link;Doi link\n";
-var university = document.getElementById('defaultUniv').value  // Baskent Univ
-var university2 = document.getElementById('defaultUniv2').value // Univ Baskent
 var qx=document.getElementById('qxValue').value
 var pubArray= new Array ([]); // an array, which contains publications
 var authorArray = new Array ([]); // an array, which contains authors with their publication
@@ -128,13 +130,16 @@ for (var i=0; i<nrows; i++) { // for each publication
 		case issnq4.includes(issn) || eissnq4.includes(eissn):
 			quartile = 'Q4';
 			break;
+		case issnah.includes(issn) || eissnah.includes(eissn):
+			quartile = 'AH';
+			break;
 		}
-	// include or exclude according to checked boxes (continue statement exits the loop)
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
 	if (document.getElementById('q3Box').checked == false && quartile == 'Q3') { continue; }
 	if (document.getElementById('q4Box').checked == false && quartile == 'Q4') { continue; }
-	if (document.getElementById('qxBox').checked == false && quartile == qx) { continue; }		
+	if (document.getElementById('qxBox').checked == false && quartile == qx) { continue; }	
+	if (document.getElementById('ahBox').checked == false && quartile == 'AH') { continue; }		
 
 	documentType=results.data[i]['Document Type']
 	if (document.getElementById('articleBox').checked == false && documentType == 'Article') { continue; }
@@ -169,11 +174,17 @@ for (var i=0; i<nrows; i++) { // for each publication
 		weird = '*' // someting weird in Addresses column, check them by marking with (*)
 		}
 	authors = addresses.slice(1).split("; [") //delete [, then go to first author of next address
-		
 	for (j=0;j<authors.length;j++) { // for each address
-	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains department
+	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains address
 	author = department[0].split ("; ") // 
-	if (department[1].includes(university) || department[1].includes(university2)) { // if Address contains default University
+	let includeAddress=false;
+	for (d=0; d<addressList.length;d++)
+		if (department[1].includes(addressList[d])) { //department[1] conatains current address 
+			includeAddress = true; // current address is in the addresses list
+			break;
+		}
+			
+	if (includeAddress) 	{ // if Address is in the Addresses list
 		for (k=0;k<author.length;k++) { // for each author
 			authorArray.push ([0]); // create rows of multidimentional array
 				for (var c=0; c<nameDict.length; c+=2) { // first item to last item
@@ -181,6 +192,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 						author[k]=nameDict[c+1] 
 						break; } // don't continue to search 
 					}
+	
 			authorArray[nauthor][0]= author[k]; // name of author
 			authorArray[nauthor][1]= department[1]; // address of author
 			authorArray[nauthor][2] = quartile
