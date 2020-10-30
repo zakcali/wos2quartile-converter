@@ -179,11 +179,10 @@ for (var i=0; i<nrows; i++) { // for each publication
 	author = department[0].split ("; ") // 
 	let includeAddress=false;
 	for (d=0; d<addressList.length;d++)
-		if (department[1].includes(addressList[d])) { //department[1] conatains current address 
+		if (department[1].includes(addressList[d])) { //department[1] contains current address 
 			includeAddress = true; // current address is in the addresses list
 			break;
 		}
-			
 	if (includeAddress) 	{ // if Address is in the Addresses list
 		for (k=0;k<author.length;k++) { // for each author
 			authorArray.push ([0]); // create rows of multidimentional array
@@ -192,7 +191,6 @@ for (var i=0; i<nrows; i++) { // for each publication
 						author[k]=nameDict[c+1] 
 						break; } // don't continue to search 
 					}
-	
 			authorArray[nauthor][0]= author[k]; // name of author
 			authorArray[nauthor][1]= department[1]; // address of author
 			authorArray[nauthor][2] = quartile
@@ -210,7 +208,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 			authorArray[nauthor][9] = results.data[i]['Volume']
 			issue = results.data[i]['Issue']
 				if (issue != '') {
-					issue = ':('+issue+')' // display (issue) if really exists
+					issue = '('+issue+'):' // display (issue) if really exists
 					}
 					else if (results.data[i]['Volume'] != '') { // if volume exists, but issue is not
 						issue = ':'
