@@ -8,7 +8,6 @@
     
 <!-- https://github.com/mholt/PapaParse-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js"></script>	
-
 <!-- // https://github.com/eligrey/FileSaver.js-->
 <script src="https://cdn.jsdelivr.net/g/filesaver.js"></script> 
 
@@ -28,22 +27,20 @@
 <body>
 <label for="myfile">Select a csv file:</label>
 <input type="file" id="csvfile" name="Csv File">
-<button onclick="readFunction()">Read</button> <br/> <br/>
+<button id="readBtn" onclick="readFunction()">Read</button> <br/> <br/>
 Authors publications <br />
 <textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br /> 
 <button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
 <button id="saveBtn" disabled onclick="saveFunction()">Save</button>
 <br/>
-Default value for unknown Q:&nbsp;<input type="text" id="qxValue" value="Q?" maxlength="2" size="2"><br>
-
+Default delimiter:&nbsp;<input type="text" id="delimitValue" value="," maxlength="1" size="1" onchange="changeDelimiter()"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
 Q4 <input type="checkbox" id="q4Box" checked="true">
 Q? <input type="checkbox" id="qxBox" checked="true"> 
 AHCI <input type="checkbox" id="ahBox" checked="true"><br/> <br/>
-
 Document Types  <br/>
 Check ALL <input type="checkbox" id="allDocumentsBox" checked="true" onclick="selectAllDocuments()"> <br/> 
 Include Article: <input type="checkbox" id="articleBox" checked="true">
@@ -64,16 +61,18 @@ Book Review <input type="checkbox" id="bookReviewBox" checked="true">
 <script>
 // global scope
 var csvtext="";
+var delimit=document.getElementById('delimitValue').value
 const wosPrefix = 'https://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=Publons&SrcAuth=Publons_CEL&KeyUT='
 const wosPostfix = '&DestLinkType=FullRecord&DestApp=WOS_CPL'
 const doiPrefix = 'https://doi.org/'
+const parseError = 'error parsing csv file, try to change delimiter: comma(,) versus semicolon(;)'
 
 function readFunction() {
 document.getElementById('publicationsArea').value=""; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('convBtn').disabled = true;  // disable convert button
 document.getElementById('saveBtn').disabled = true;  // disable save button
-
+document.getElementById('readBtn').disabled = true;  // disable read button
 var file = document.getElementById('csvfile').files[0]; //get filename
 var reader = new FileReader(); // html5 
 	reader.onload = (function(file) {
@@ -81,31 +80,29 @@ var reader = new FileReader(); // html5
 	csvtext = this.result;	//read from csv file
 		document.getElementById('publicationsArea').value=csvtext; // show in textarea
 		document.getElementById('convBtn').disabled = false;  // enable convert button
+		document.getElementById('readBtn').disabled = false;  // enable read button
            }
 		})(file);
 		reader.readAsText(file);
 }
-
 function convertFunction() {
-var pubtext="NS;Author name;Author address;Quartile;Times cited;Article type;Authors;Aticle title;Article source;Year;Volume-issue-page;WOS number;WOS link;Doi link\n";
-var qx=document.getElementById('qxValue').value
+var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Aticle title'+delimit+'Article source'
++delimit+'Year'+delimit+'Volume-issue-page'+delimit+'WOS number'+delimit+'WOS link'+delimit+'Doi link\n';
 var pubArray= new Array ([]); // an array, which contains publications
 var authorArray = new Array ([]); // an array, which contains authors with their publication
 var addresses="";
 var department = "";
 var nauthor = 0; // number of authors 
 var quartile="";
-
 document.getElementById('publicationsArea').value=""; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('saveBtn').disabled = true;  // disable save button
 	results = Papa.parse(csvtext, {	//parse from csv text
 	header: true,
-	delimiter: ";",
+	delimiter: delimit,  // read from text box
 	skipEmptyLines: true
 });
 nrows = results.data.length; // number of rows in csv file
-
 // initialise every row of a multidimentional array
 for (var i=0; i<nrows; i++) {
 	pubArray.push([0]); // create rows of multidimentional array
@@ -116,7 +113,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	eissn = results.data[i]['eISSN']
 	if (issn=='') {issn ='NULL'} 
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
-	quartile = qx; // unknown, not in the list
+	quartile = 'Q?'; // unknown, not in the list
 	switch (true) {
 		case issnq1.includes(issn) || eissnq1.includes(eissn):
 			quartile = 'Q1';
@@ -138,7 +135,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
 	if (document.getElementById('q3Box').checked == false && quartile == 'Q3') { continue; }
 	if (document.getElementById('q4Box').checked == false && quartile == 'Q4') { continue; }
-	if (document.getElementById('qxBox').checked == false && quartile == qx) { continue; }	
+	if (document.getElementById('qxBox').checked == false && quartile == 'Q?') { continue; }	
 	if (document.getElementById('ahBox').checked == false && quartile == 'AH') { continue; }		
 
 	documentType=results.data[i]['Document Type']
@@ -159,6 +156,10 @@ for (var i=0; i<nrows; i++) { // for each publication
 
 	weird = '' // assume each article in shape of normal address format and author format
 	addresses = results.data[i].Addresses // deal with this text
+	if (addresses === undefined ) {
+	document.getElementById('publicationsArea').value = parseError;
+	return;
+	}
 	if (addresses == '') { // if Addresses field if empty
 		addresses = '[' + results.data[i]['Authors'] + '] ' +'Unkonown;'
 		weird = '*'  // check output 
@@ -181,8 +182,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	for (d=0; d<addressList.length;d++)
 		if (department[1].includes(addressList[d])) { //department[1] contains current address 
 			includeAddress = true; // current address is in the addresses list
-			break;
-		}
+			break;}
 	if (includeAddress) 	{ // if Address is in the Addresses list
 		for (k=0;k<author.length;k++) { // for each author
 			authorArray.push ([0]); // create rows of multidimentional array
@@ -221,19 +221,19 @@ for (var i=0; i<nrows; i++) { // for each publication
 			doiLink = doiPrefix+results.data[i]['DOI']
 			{ // add publication to text area
 				pubtext = pubtext+weird
-				+";"+authorArray[nauthor][0] 
-				+";"+"\""+authorArray[nauthor][1]+"\"" // address of author, between " and "
-				+";"+ authorArray[nauthor][2] // quartile
-				+";"+ authorArray[nauthor][3] // times cited
-				+";"+"\""+authorArray[nauthor][4]+"\"" // Document type between " " not to confuse csv
-				+";"+"\""+authorArray[nauthor][5]+"\"" // Authors displayed between " and " not to confuse csv
-				+";"+"\""+authorArray[nauthor][6]+"\"" // Article title between " and "not to confuse csv
-				+";"+authorArray[nauthor][7] // source title
-				+";"+authorArray[nauthor][8] // publication year
-				+";"+"\""+authorArray[nauthor][9]+authorArray[nauthor][10]+authorArray[nauthor][11]+'-'+authorArray[nauthor][12]+"\"" // Volume, Issue, and page numbers displayed between " and "
-				+";"+authorArray[nauthor][13] //WOS
-				+";"+wosPrefix+authorArray[nauthor][13]+wosPostfix // WOS link
-				+";"+doiLink	//DOI link	
+				+delimit+authorArray[nauthor][0] 
+				+delimit+"\""+authorArray[nauthor][1]+"\"" // address of author, between " and "
+				+delimit+ authorArray[nauthor][2] // quartile
+				+delimit+ authorArray[nauthor][3] // times cited
+				+delimit+"\""+authorArray[nauthor][4]+"\"" // Document type between " " not to confuse csv
+				+delimit+"\""+authorArray[nauthor][5]+"\"" // Authors displayed between " and " not to confuse csv
+				+delimit+"\""+authorArray[nauthor][6]+"\"" // Article title between " and "not to confuse csv
+				+delimit+authorArray[nauthor][7] // source title
+				+delimit+authorArray[nauthor][8] // publication year
+				+delimit+"\""+authorArray[nauthor][9]+authorArray[nauthor][10]+authorArray[nauthor][11]+'-'+authorArray[nauthor][12]+"\"" // Volume, Issue, and page numbers displayed between " and "
+				+delimit+authorArray[nauthor][13] //WOS
+				+delimit+wosPrefix+authorArray[nauthor][13]+wosPostfix // WOS link
+				+delimit+doiLink	//DOI link	
 				+"\n"
 				} // add publication to text area
 			nauthor++;
@@ -280,6 +280,9 @@ if (checkBox.checked == true) {
 	document.getElementById('reviewEABox').checked = false;
 	document.getElementById('bookReviewBox').checked = false;
  	}
+}
+function changeDelimiter() {
+	delimit=document.getElementById('delimitValue').value
 }
 function copyFunction() {
 	document.getElementById('publicationsArea').select();
