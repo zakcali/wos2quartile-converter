@@ -67,6 +67,16 @@ const wosPrefix = 'https://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVers
 const wosPostfix = '&DestLinkType=FullRecord&DestApp=WOS_CPL'
 const doiPrefix = 'https://doi.org/'
 const parseError = 'error parsing csv file, try to change delimiter: comma(,) versus semicolon(;)'
+const eissnq1List = eissnq1.toString().split("\n"); // text to array
+const eissnq2List = eissnq2.toString().split("\n");
+const eissnq3List = eissnq3.toString().split("\n");
+const eissnq4List = eissnq4.toString().split("\n");
+const issnq1List = issnq1.toString().split("\n");
+const issnq2List = issnq2.toString().split("\n");
+const issnq3List = issnq3.toString().split("\n");
+const issnq4List = issnq4.toString().split("\n");
+const issnahList = issnah.toString().split("\n");
+const eissnahList = eissnah.toString().split("\n");
 
 function readFunction() {
 document.getElementById('publicationsArea').value=""; // clear textarea
@@ -98,6 +108,7 @@ var quartile="";
 document.getElementById('publicationsArea').value=""; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('saveBtn').disabled = true;  // disable save button
+document.getElementById('convBtn').disabled = true;  // disable convert button
 	results = Papa.parse(csvtext, {	//parse from csv text
 	header: true,
 	delimiter: delimit,  // read from text box
@@ -116,15 +127,15 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
 	quartile = 'Q?'; // unknown, not in the list
 	
-	if (issnq1.indexOf(issn) > -1 || eissnq1.indexOf(eissn) > -1)
+	if (issnq1List.indexOf(issn) > -1 || eissnq1List.indexOf(eissn) > -1)
 			{ quartile = 'Q1';}
-	else if (issnq2.indexOf(issn) > -1 || eissnq2.indexOf(eissn) > -1)
+	else if (issnq2List.indexOf(issn) > -1 || eissnq2List.indexOf(eissn) > -1)
 			{ quartile = 'Q2';}
-	else if (issnq3.indexOf(issn) > -1 || eissnq3.indexOf(eissn) > -1)
+	else if (issnq3List.indexOf(issn) > -1 || eissnq3List.indexOf(eissn) > -1)
 			{ quartile = 'Q3';}
-	else if (issnq4.indexOf(issn) > -1 || eissnq4.indexOf(eissn) > -1)
+	else if (issnq4List.indexOf(issn) > -1 || eissnq4List.indexOf(eissn) > -1)
 			{ quartile = 'Q4';}
-	else if (issnah.indexOf(issn) > -1 || eissnah.indexOf(eissn) > -1)
+	else if (issnahList.indexOf(issn) > -1 || eissnahList.indexOf(eissn) > -1)
 			{ quartile = 'AH';}
 					
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
