@@ -19,9 +19,10 @@
 <script src="issnq2.txt"></script>
 <script src="issnq3.txt"></script>
 <script src="issnq4.txt"></script>
-<script src="namedict.txt"></script>
 <script src="issnahci.txt"></script>
 <script src="eissnahci.txt"></script>
+
+<script src="namedict.txt"></script>
 <script src="addresslist.txt"></script>
 </head>
 <body>
@@ -34,7 +35,7 @@ Authors publications <br />
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
 <button id="saveBtn" disabled onclick="saveFunction()">Save</button>
 <br/>
-Default delimiter:&nbsp;<input type="text" id="delimitValue" value="," maxlength="1" size="1" onchange="changeDelimiter()"><br>
+Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
@@ -114,23 +115,18 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (issn=='') {issn ='NULL'} 
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
 	quartile = 'Q?'; // unknown, not in the list
-	switch (true) {
-		case issnq1.includes(issn) || eissnq1.includes(eissn):
-			quartile = 'Q1';
-			break;
-		case issnq2.includes(issn) || eissnq2.includes(eissn):
-			quartile = 'Q2';
-			break;
-		case issnq3.includes(issn) || eissnq3.includes(eissn):
-			quartile = 'Q3';
-			break;
-		case issnq4.includes(issn) || eissnq4.includes(eissn):
-			quartile = 'Q4';
-			break;
-		case issnah.includes(issn) || eissnah.includes(eissn):
-			quartile = 'AH';
-			break;
-		}
+	
+	if (issnq1.indexOf(issn) > -1 || eissnq1.indexOf(eissn) > -1)
+			{ quartile = 'Q1';}
+	else if (issnq2.indexOf(issn) > -1 || eissnq2.indexOf(eissn) > -1)
+			{ quartile = 'Q2';}
+	else if (issnq3.indexOf(issn) > -1 || eissnq3.indexOf(eissn) > -1)
+			{ quartile = 'Q3';}
+	else if (issnq4.indexOf(issn) > -1 || eissnq4.indexOf(eissn) > -1)
+			{ quartile = 'Q4';}
+	else if (issnah.indexOf(issn) > -1 || eissnah.indexOf(eissn) > -1)
+			{ quartile = 'AH';}
+					
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
 	if (document.getElementById('q3Box').checked == false && quartile == 'Q3') { continue; }
