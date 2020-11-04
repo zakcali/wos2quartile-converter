@@ -98,7 +98,7 @@ var reader = new FileReader(); // html5
 }
 function convertFunction() {
 var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Aticle title'+delimit+'Article source'
-+delimit+'Year'+delimit+'Volume-issue-page'+delimit+'WOS number'+delimit+'WOS link'+delimit+'Doi link\n';
++delimit+'Year'+delimit+'Volume (issue): pages-article#'+delimit+'WOS number'+delimit+'WOS link'+delimit+'Doi link\n';
 var pubArray= new Array ([]); // an array, which contains publications
 var authorArray = new Array ([]); // an array, which contains authors with their publication
 var addresses="";
@@ -186,18 +186,24 @@ for (var i=0; i<nrows; i++) { // for each publication
 	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains address
 	author = department[0].split ("; ") // 
 	let includeAddress=false;
+	if (department[1] === undefined) {
+	department[1] = addressList[0]+'?';  // one of authors seems to be in address list
+	weird = '*'; // someting weird in Addresses column, check them by marking with (*)
+	}
 	for (d=0; d<addressList.length;d++)
-		if (department[1].includes(addressList[d])) { //department[1] contains current address 
+	if (department[1].includes(addressList[d])) { //department[1] contains current address 
 			includeAddress = true; // current address is in the addresses list
 			break;}
 	if (includeAddress) 	{ // if Address is in the Addresses list
 		for (k=0;k<author.length;k++) { // for each author
+			if (author[k] === '')		{
+				break; }	// skip creating an author named ''
 			authorArray.push ([0]); // create rows of multidimentional array
-				for (var c=0; c<nameDict.length; c+=2) { // first item to last item
-					if ( author[k]==nameDict[c]) {  // if author name is misspelled, then correct it
-						author[k]=nameDict[c+1] 
-						break; } // don't continue to search 
-					}
+			for (var c=0; c<nameDict.length; c+=2) { // first item to last item
+				if ( author[k]==nameDict[c]) {  // if author name is misspelled, then correct it
+					author[k]=nameDict[c+1] 
+					break; } // don't continue to search 
+				}
 			authorArray[nauthor][0]= author[k]; // name of author
 			authorArray[nauthor][1]= department[1]; // address of author
 			authorArray[nauthor][2] = quartile
@@ -223,23 +229,24 @@ for (var i=0; i<nrows; i++) { // for each publication
 			authorArray[nauthor][10] = issue
 			authorArray[nauthor][11] = results.data[i]['Start Page']
 			authorArray[nauthor][12] = results.data[i]['End Page']
-			authorArray[nauthor][13] = results.data[i]['UT (Unique WOS ID)']
-			authorArray[nauthor][14] = results.data[i]['DOI']
+			authorArray[nauthor][13] = results.data[i]['Article Number']
+			authorArray[nauthor][14] = results.data[i]['UT (Unique WOS ID)']
+			authorArray[nauthor][15] = results.data[i]['DOI']
 			doiLink = doiPrefix+results.data[i]['DOI']
 			{ // add publication to text area
 				pubtext = pubtext+weird
-				+delimit+authorArray[nauthor][0] 
+				+delimit+"\""+authorArray[nauthor][0]+"\""
 				+delimit+"\""+authorArray[nauthor][1]+"\"" // address of author, between " and "
 				+delimit+ authorArray[nauthor][2] // quartile
 				+delimit+ authorArray[nauthor][3] // times cited
 				+delimit+"\""+authorArray[nauthor][4]+"\"" // Document type between " " not to confuse csv
 				+delimit+"\""+authorArray[nauthor][5]+"\"" // Authors displayed between " and " not to confuse csv
 				+delimit+"\""+authorArray[nauthor][6]+"\"" // Article title between " and "not to confuse csv
-				+delimit+authorArray[nauthor][7] // source title
+				+delimit+"\""+authorArray[nauthor][7]+"\"" // source title
 				+delimit+authorArray[nauthor][8] // publication year
-				+delimit+"\""+authorArray[nauthor][9]+authorArray[nauthor][10]+authorArray[nauthor][11]+'-'+authorArray[nauthor][12]+"\"" // Volume, Issue, and page numbers displayed between " and "
-				+delimit+authorArray[nauthor][13] //WOS
-				+delimit+wosPrefix+authorArray[nauthor][13]+wosPostfix // WOS link
+				+delimit+"\""+authorArray[nauthor][9]+authorArray[nauthor][10]+authorArray[nauthor][11]+'-'+authorArray[nauthor][12]+authorArray[nauthor][13]+"\"" // Volume, Issue, page numbers or article number displayed between " and "
+				+delimit+authorArray[nauthor][14] //WOS
+				+delimit+wosPrefix+authorArray[nauthor][14]+wosPostfix // WOS link
 				+delimit+doiLink	//DOI link	
 				+"\n"
 				} // add publication to text area
