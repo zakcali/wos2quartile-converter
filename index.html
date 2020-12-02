@@ -67,16 +67,16 @@ const wosPrefix = 'https://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVers
 const wosPostfix = '&DestLinkType=FullRecord&DestApp=WOS_CPL'
 const doiPrefix = 'https://doi.org/'
 const parseError = 'error parsing csv file, try to change delimiter: comma(,) versus semicolon(;)'
-const eissnq1List = eissnq1.toString().split("\n"); // text to array
-const eissnq2List = eissnq2.toString().split("\n");
-const eissnq3List = eissnq3.toString().split("\n");
-const eissnq4List = eissnq4.toString().split("\n");
-const issnq1List = issnq1.toString().split("\n");
-const issnq2List = issnq2.toString().split("\n");
-const issnq3List = issnq3.toString().split("\n");
-const issnq4List = issnq4.toString().split("\n");
-const issnahList = issnah.toString().split("\n");
-const eissnahList = eissnah.toString().split("\n");
+const eissnq1List = eissnq1.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n'); // text to array
+const eissnq2List = eissnq2.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const eissnq3List = eissnq3.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const eissnq4List = eissnq4.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const issnq1List = issnq1.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const issnq2List = issnq2.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const issnq3List = issnq3.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const issnq4List = issnq4.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const issnahList = issnah.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const eissnahList = eissnah.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 
 function readFunction() {
 document.getElementById('publicationsArea').value=""; // clear textarea
