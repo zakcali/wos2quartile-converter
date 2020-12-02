@@ -48,5 +48,6 @@ let nameDict= [
 "Yilmaz-Yalcin, Yaprak", "Yalcin, Yaprak",
 "Yuksel Simsek, Seda","Simsek, Seda Yuksel",
 "Cem, O", "Onal, Cem",
-"Cem, H. Onal", "Onal, Cem"
+"Cem, H. Onal", "Onal, Cem",
+"Azap, O.", "Azap, Ozlem Kurt"
 ];

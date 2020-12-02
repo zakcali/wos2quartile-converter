@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
+<!-- wos2-converter V2.2-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -21,6 +22,10 @@
 <script src="issnq4.txt"></script>
 <script src="issnahci.txt"></script>
 <script src="eissnahci.txt"></script>
+<script src="wosq1.txt"></script>
+<script src="wosq2.txt"></script>
+<script src="wosq3.txt"></script>
+<script src="wosq4.txt"></script>
 
 <script src="namedict.txt"></script>
 <script src="addresslist.txt"></script>
@@ -34,8 +39,9 @@ Authors publications <br />
 <button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
 <button id="saveBtn" disabled onclick="saveFunction()">Save</button>
+<button id="wosBtn" disabled onclick="wosFunction()">WOS List</button>
 <br/>
-Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"><br>
+Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"> Split Authors <input type="checkbox" id="sAuthors" checked="true"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
@@ -61,6 +67,13 @@ Book Review <input type="checkbox" id="bookReviewBox" checked="true">
 <br/>
 <script>
 // global scope
+var authorArray = new Array ([]); // an array, which contains authors with their publication, a row in the output
+var author = new Array ([]); // a group of authors sharing same addresses
+var addressOfAuthor ='';
+var splitAuthors=false;
+var includeAddress=false;
+var	atLeastOneAddress=false;
+var nauthor=0;
 var csvtext="";
 var delimit=document.getElementById('delimitValue').value
 const wosPrefix = 'https://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=Publons&SrcAuth=Publons_CEL&KeyUT='
@@ -77,12 +90,17 @@ const issnq3List = issnq3.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, 
 const issnq4List = issnq4.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 const issnahList = issnah.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 const eissnahList = eissnah.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const wosq1List = wosq1.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const wosq2List = wosq2.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const wosq3List = wosq3.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const wosq4List = wosq4.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 
 function readFunction() {
-document.getElementById('publicationsArea').value=""; // clear textarea
+document.getElementById('publicationsArea').value=''; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('convBtn').disabled = true;  // disable convert button
 document.getElementById('saveBtn').disabled = true;  // disable save button
+document.getElementById('wosBtn').disabled = true;  // disable wos button
 document.getElementById('readBtn').disabled = true;  // disable read button
 var file = document.getElementById('csvfile').files[0]; //get filename
 var reader = new FileReader(); // html5 
@@ -97,17 +115,23 @@ var reader = new FileReader(); // html5
 		reader.readAsText(file);
 }
 function convertFunction() {
+if (document.getElementById('sAuthors').checked) {
+	splitAuthors=true;}
+	else {
+	splitAuthors=false;}
+	
 var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Aticle title'+delimit+'Article source'
 +delimit+'Year'+delimit+'Volume (issue): pages-article#'+delimit+'WOS number'+delimit+'WOS link'+delimit+'Doi link\n';
 var pubArray= new Array ([]); // an array, which contains publications
-var authorArray = new Array ([]); // an array, which contains authors with their publication
+
 var addresses="";
 var department = "";
-var nauthor = 0; // number of authors 
+nauthor = 0; // number of authors 
 var quartile="";
 document.getElementById('publicationsArea').value=""; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('saveBtn').disabled = true;  // disable save button
+document.getElementById('wosBtn').disabled = true;  // disable wos button
 document.getElementById('convBtn').disabled = true;  // disable convert button
 	results = Papa.parse(csvtext, {	//parse from csv text
 	header: true,
@@ -121,13 +145,23 @@ for (var i=0; i<nrows; i++) {
 	pubArray[i][0]="0"; // initialise first member of the row
  }
 for (var i=0; i<nrows; i++) { // for each publication
-	issn = results.data[i]['ISSN']
-	eissn = results.data[i]['eISSN']
+	atLeastOneAddress = false;
+	wos = results.data[i]['UT (Unique WOS ID)'];
+	issn = results.data[i]['ISSN'];
+	eissn = results.data[i]['eISSN'];
+	reprintAddress=results.data[i]['Reprint Addresses'];
 	if (issn=='') {issn ='NULL'} 
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
 	quartile = 'Q?'; // unknown, not in the list
-	
-	if (issnq1List.indexOf(issn) > -1 || eissnq1List.indexOf(eissn) > -1)
+	if ( wosq1List.indexOf(wos) > -1)
+			{ quartile = 'Q1';}
+	else if (wosq2List.indexOf(wos) > -1) 
+			{ quartile = 'Q2';}
+	else if (wosq3List.indexOf(wos) > -1) 
+			{ quartile = 'Q3';}
+	else if (wosq4List.indexOf(wos) > -1 )  
+			{ quartile = 'Q4';}
+	else if (issnq1List.indexOf(issn) > -1 || eissnq1List.indexOf(eissn) > -1)
 			{ quartile = 'Q1';}
 	else if (issnq2List.indexOf(issn) > -1 || eissnq2List.indexOf(eissn) > -1)
 			{ quartile = 'Q2';}
@@ -162,6 +196,14 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (document.getElementById('bookReviewBox').checked == false && documentType == 'Book Review') { continue; }
 
 	weird = '' // assume each article in shape of normal address format and author format
+	if (splitAuthors==false) {
+				addressOfAuthor = '';
+				author[0]='';
+				author.length=1;
+				addRow();
+				includeAddress = true;
+				continue;  // add a row without author name and his/her address
+	}
 	addresses = results.data[i].Addresses // deal with this text
 	if (addresses === undefined ) {
 	document.getElementById('publicationsArea').value = parseError;
@@ -182,22 +224,44 @@ for (var i=0; i<nrows; i++) { // for each publication
 		weird = '*' // someting weird in Addresses column, check them by marking with (*)
 		}
 	authors = addresses.slice(1).split("; [") //delete [, then go to first author of next address
+	
 	for (j=0;j<authors.length;j++) { // for each address
 	department = authors[j].split ("] ") // department[0] contains authors, department[1] contains address
 	author = department[0].split ("; ") // 
-	let includeAddress=false;
+	includeAddress=false;
 	if (department[1] === undefined) {
 	department[1] = addressList[0]+'?';  // one of authors seems to be in address list
 	weird = '*'; // someting weird in Addresses column, check them by marking with (*)
 	}
-	for (d=0; d<addressList.length;d++)
-	if (department[1].includes(addressList[d])) { //department[1] contains current address 
+	addressOfAuthor=department[1];
+	for (d=0; d<addressList.length;d++) {
+	if (addressOfAuthor.toLowerCase().includes(addressList[d].toLowerCase())) { //department[1] contains current address 
 			includeAddress = true; // current address is in the addresses list
 			break;}
-	if (includeAddress) 	{ // if Address is in the Addresses list
+	}
+	if (includeAddress) {
+	atLeastOneAddress=true;
+	addRow();
+		}	
+	} // for each address
+	if ((atLeastOneAddress == false) && (reprintAddress !=='') ) { // didn't find a suitable address, check for reprint Address
+		for (d=0; d<addressList.length;d++)
+			if (reprintAddress.toLowerCase().includes(addressList[d].toLowerCase())) {
+				let reprintArray = reprintAddress.split(' (corresponding author), ')
+				addressOfAuthor = reprintArray[1];
+				author[0]=reprintArray[0];
+				author.length=1;
+				includeAddress = true;
+//				console.log(wos)
+//				console.log (reprintArray)
+				addRow();
+				}
+			}	
+} // for each publication
+function addRow () { // if Address is in the Addresses list
 		for (k=0;k<author.length;k++) { // for each author
-			if (author[k] === '')		{
-				break; }	// skip creating an author named ''
+//			if (author[k] === '')		{
+//				break; }	// skip creating an author named ''
 			authorArray.push ([0]); // create rows of multidimentional array
 			for (var c=0; c<nameDict.length; c+=2) { // first item to last item
 				if ( author[k]==nameDict[c]) {  // if author name is misspelled, then correct it
@@ -205,7 +269,11 @@ for (var i=0; i<nrows; i++) { // for each publication
 					break; } // don't continue to search 
 				}
 			authorArray[nauthor][0]= author[k]; // name of author
-			authorArray[nauthor][1]= department[1]; // address of author
+			authorArray[nauthor][1]= addressOfAuthor; // address of author
+			if (splitAuthors == false) {
+				authorArray[nauthor][0]='';
+				authorArray[nauthor][1]='';
+			}
 			authorArray[nauthor][2] = quartile
 			authorArray[nauthor][3] = results.data[i]['Times Cited, WoS Core']
 			authorArray[nauthor][4] = results.data[i]['Document Type']
@@ -252,12 +320,12 @@ for (var i=0; i<nrows; i++) { // for each publication
 				} // add publication to text area
 			nauthor++;
 			}
-		} 
-	}
-}
+} // if Address is in the Addresses list
+
 document.getElementById('publicationsArea').value=pubtext;
 document.getElementById('copyBtn').disabled = false; // enable copy button
 document.getElementById('saveBtn').disabled = false;  // enable save button
+document.getElementById('wosBtn').disabled = false;  // enable wos button
 document.getElementById('convBtn').disabled = true;  // disable convert button
 }
 function selectAllDocuments() {
@@ -298,6 +366,20 @@ if (checkBox.checked == true) {
 function changeDelimiter() {
 	delimit=document.getElementById('delimitValue').value
 }
+function wosFunction() {
+document.getElementById('publicationsArea').value=''; // clear textarea
+let longWOStext='UT=(';
+for (let k=0; k<nauthor; k++) {
+longWOStext = longWOStext+' '+ authorArray[k][14]+' OR';
+	}
+if	(longWOStext.endsWith('OR')) {
+	longWOStext=longWOStext.slice(0, -2);
+		}
+	longWOStext=longWOStext+')';
+document.getElementById('publicationsArea').value=longWOStext;
+}	
+
+
 function copyFunction() {
 	document.getElementById('publicationsArea').select();
 	document.execCommand("copy");
