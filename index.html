@@ -326,7 +326,7 @@ document.getElementById('publicationsArea').value=pubtext;
 document.getElementById('copyBtn').disabled = false; // enable copy button
 document.getElementById('saveBtn').disabled = false;  // enable save button
 document.getElementById('wosBtn').disabled = false;  // enable wos button
-document.getElementById('convBtn').disabled = true;  // disable convert button
+document.getElementById('convBtn').disabled = false;  // enable convert button
 }
 function selectAllDocuments() {
 var checkBox = document.getElementById('allDocumentsBox');
@@ -377,6 +377,7 @@ if	(longWOStext.endsWith('OR')) {
 		}
 	longWOStext=longWOStext+')';
 document.getElementById('publicationsArea').value=longWOStext;
+document.getElementById('convBtn').disabled = false;  // enable convert button
 }	
 
 
