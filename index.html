@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.2-->
+<!-- wos2-converter V2.4-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -33,13 +33,15 @@
 <body>
 <label for="myfile">Select a csv file:</label>
 <input type="file" id="csvfile" name="Csv File">
-<button id="readBtn" onclick="readFunction()">Read</button> <br/> <br/>
-Authors publications <br />
+<button id="readBtn" onclick="readFunction()">Read</button> <br/><br/>
+<label id = "infoTextFile" ></label> <label id = "infoTextOutput" ></label>  <br/>
+Yayınlar:<br />
 <textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br /> 
 <button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
-<button id="saveBtn" disabled onclick="saveFunction()">Save</button>
+<button id="saveCsvBtn" disabled onclick="saveCsvFunction()">Save csv</button>
 <button id="wosBtn" disabled onclick="wosFunction()">WOS List</button>
+<button id="saveTxtBtn" disabled onclick="saveTxtFunction()">Save txt</button>
 <br/>
 Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"> Split Authors <input type="checkbox" id="sAuthors" checked="true"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
@@ -99,7 +101,8 @@ function readFunction() {
 document.getElementById('publicationsArea').value=''; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('convBtn').disabled = true;  // disable convert button
-document.getElementById('saveBtn').disabled = true;  // disable save button
+document.getElementById('saveCsvBtn').disabled = true;  // disable save button
+document.getElementById('saveTxtBtn').disabled = true;  // disable save button
 document.getElementById('wosBtn').disabled = true;  // disable wos button
 document.getElementById('readBtn').disabled = true;  // disable read button
 var file = document.getElementById('csvfile').files[0]; //get filename
@@ -130,7 +133,8 @@ nauthor = 0; // number of authors
 var quartile="";
 document.getElementById('publicationsArea').value=""; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
-document.getElementById('saveBtn').disabled = true;  // disable save button
+document.getElementById('saveCsvBtn').disabled = true;  // disable save button
+document.getElementById('saveTxtBtn').disabled = true;  // disable save button
 document.getElementById('wosBtn').disabled = true;  // disable wos button
 document.getElementById('convBtn').disabled = true;  // disable convert button
 	results = Papa.parse(csvtext, {	//parse from csv text
@@ -139,6 +143,7 @@ document.getElementById('convBtn').disabled = true;  // disable convert button
 	skipEmptyLines: true
 });
 nrows = results.data.length; // number of rows in csv file
+document.getElementById('infoTextFile').innerHTML = 'Dosyadaki makale sayısı = '+nrows+'.';
 // initialise every row of a multidimentional array
 for (var i=0; i<nrows; i++) {
 	pubArray.push([0]); // create rows of multidimentional array
@@ -324,9 +329,11 @@ function addRow () { // if Address is in the Addresses list
 
 document.getElementById('publicationsArea').value=pubtext;
 document.getElementById('copyBtn').disabled = false; // enable copy button
-document.getElementById('saveBtn').disabled = false;  // enable save button
+document.getElementById('saveCsvBtn').disabled = false;  // enable save button
+document.getElementById('saveTxtBtn').disabled = false;  // enable save button
 document.getElementById('wosBtn').disabled = false;  // enable wos button
 document.getElementById('convBtn').disabled = false;  // enable convert button
+document.getElementById('infoTextOutput').innerHTML = 'Çıktıdaki yazar/makale sayısı = '+nauthor+'.';
 }
 function selectAllDocuments() {
 var checkBox = document.getElementById('allDocumentsBox');
@@ -386,10 +393,16 @@ function copyFunction() {
 	document.execCommand("copy");
 	document.getElementById('convBtn').disabled = false;  // enable convert button
 }
-function saveFunction() {
+function saveCsvFunction() {
 var blob = new Blob([document.getElementById('publicationsArea').value],
                 { type: "text/plain;charset=utf-8" });
 saveAs(blob, "output.csv");
+	document.getElementById('convBtn').disabled = false;  // enable convert button
+}
+function saveTxtFunction() {
+var blob = new Blob([document.getElementById('publicationsArea').value],
+                { type: "text/plain;charset=utf-8" });
+saveAs(blob, "output.txt");
 	document.getElementById('convBtn').disabled = false;  // enable convert button
 }
 </script>
