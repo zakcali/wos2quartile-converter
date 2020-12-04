@@ -35,9 +35,9 @@
 <label for="myfile">Select a csv file:</label>
 <input type="file" id="csvfile" name="Csv File">
 <button id="readBtn" onclick="readFunction()">Read</button> <br/><br/>
-<label id = "infoTextFile" ></label> <label id = "infoTextOutput" ></label>  <br/>
 Publications:<br />
-<textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br /> 
+<textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br/> 
+<label id = "infoTextFile" ></label> <label id = "infoTextOutput" ></label><br/>
 <button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
 <button id="saveCsvBtn" disabled onclick="saveCsvFunction()">Save csv</button>
@@ -67,8 +67,7 @@ Include Retraction: <input type="checkbox" id="retractionBox" checked="true">
 Correction: <input type="checkbox" id="correctionBox" checked="true"> <br/>
 Include Review: <input type="checkbox" id="reviewBox" checked="true">
 Review-EA <input type="checkbox" id="reviewEABox" checked="true">
-Book Review <input type="checkbox" id="bookReviewBox" checked="true">
-<br/>
+Book Review <input type="checkbox" id="bookReviewBox" checked="true"><br/>
 <script>
 // global scope
 var authorArray = new Array ([]); // an array, which contains authors with their publication, a row in the output
@@ -117,6 +116,7 @@ var reader = new FileReader(); // html5
 		document.getElementById('convBtn').disabled = false;  // enable convert button
 		document.getElementById('readBtn').disabled = false;  // enable read button
 		document.getElementById('infoTextFile').innerHTML = ''; // delete any previous information about row counts
+		document.getElementById('infoTextOutput').innerHTML = ''; // delete any previous information about row counts		
            }
 		})(file);
 		reader.readAsText(file);
