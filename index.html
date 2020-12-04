@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.4-->
+<!-- wos2-converter V2.5-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -26,6 +26,7 @@
 <script src="wosq2.txt"></script>
 <script src="wosq3.txt"></script>
 <script src="wosq4.txt"></script>
+<script src="woses.txt"></script>
 
 <script src="namedict.txt"></script>
 <script src="addresslist.txt"></script>
@@ -35,7 +36,7 @@
 <input type="file" id="csvfile" name="Csv File">
 <button id="readBtn" onclick="readFunction()">Read</button> <br/><br/>
 <label id = "infoTextFile" ></label> <label id = "infoTextOutput" ></label>  <br/>
-Yayınlar:<br />
+Publications:<br />
 <textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br /> 
 <button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
@@ -49,7 +50,8 @@ Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
 Q4 <input type="checkbox" id="q4Box" checked="true">
 Q? <input type="checkbox" id="qxBox" checked="true"> 
-AHCI <input type="checkbox" id="ahBox" checked="true"><br/> <br/>
+AHCI <input type="checkbox" id="ahBox" checked="true">
+ESCI <input type="checkbox" id="esBox" checked="true"><br/> <br/>
 Document Types  <br/>
 Check ALL <input type="checkbox" id="allDocumentsBox" checked="true" onclick="selectAllDocuments()"> <br/> 
 Include Article: <input type="checkbox" id="articleBox" checked="true">
@@ -96,6 +98,7 @@ const wosq1List = wosq1.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, ''
 const wosq2List = wosq2.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 const wosq3List = wosq3.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 const wosq4List = wosq4.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+const wosesList = woses.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 
 function readFunction() {
 document.getElementById('publicationsArea').value=''; // clear textarea
@@ -113,6 +116,7 @@ var reader = new FileReader(); // html5
 		document.getElementById('publicationsArea').value=csvtext; // show in textarea
 		document.getElementById('convBtn').disabled = false;  // enable convert button
 		document.getElementById('readBtn').disabled = false;  // enable read button
+		document.getElementById('infoTextFile').innerHTML = ''; // delete any previous information about row counts
            }
 		})(file);
 		reader.readAsText(file);
@@ -143,7 +147,7 @@ document.getElementById('convBtn').disabled = true;  // disable convert button
 	skipEmptyLines: true
 });
 nrows = results.data.length; // number of rows in csv file
-document.getElementById('infoTextFile').innerHTML = 'Dosyadaki makale sayısı = '+nrows+'.';
+document.getElementById('infoTextFile').innerHTML = 'Number of publications in the csv file = '+nrows+'.';
 // initialise every row of a multidimentional array
 for (var i=0; i<nrows; i++) {
 	pubArray.push([0]); // create rows of multidimentional array
@@ -176,13 +180,16 @@ for (var i=0; i<nrows; i++) { // for each publication
 			{ quartile = 'Q4';}
 	else if (issnahList.indexOf(issn) > -1 || eissnahList.indexOf(eissn) > -1)
 			{ quartile = 'AH';}
+	else if (wosesList.indexOf(wos) > -1 )  
+			{ quartile = 'ES';}
 					
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
 	if (document.getElementById('q3Box').checked == false && quartile == 'Q3') { continue; }
 	if (document.getElementById('q4Box').checked == false && quartile == 'Q4') { continue; }
 	if (document.getElementById('qxBox').checked == false && quartile == 'Q?') { continue; }	
-	if (document.getElementById('ahBox').checked == false && quartile == 'AH') { continue; }		
+	if (document.getElementById('ahBox').checked == false && quartile == 'AH') { continue; }	
+	if (document.getElementById('esBox').checked == false && quartile == 'ES') { continue; }		
 
 	documentType=results.data[i]['Document Type']
 	if (document.getElementById('articleBox').checked == false && documentType == 'Article') { continue; }
@@ -333,7 +340,7 @@ document.getElementById('saveCsvBtn').disabled = false;  // enable save button
 document.getElementById('saveTxtBtn').disabled = false;  // enable save button
 document.getElementById('wosBtn').disabled = false;  // enable wos button
 document.getElementById('convBtn').disabled = false;  // enable convert button
-document.getElementById('infoTextOutput').innerHTML = 'Çıktıdaki yazar/makale sayısı = '+nauthor+'.';
+document.getElementById('infoTextOutput').innerHTML = 'Number of authors/publications in output = '+nauthor+'.';
 }
 function selectAllDocuments() {
 var checkBox = document.getElementById('allDocumentsBox');
