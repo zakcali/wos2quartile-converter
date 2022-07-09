@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.5-->
+<!-- wos2-converter V2.64-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -44,14 +44,14 @@ Publications:<br />
 <button id="wosBtn" disabled onclick="wosFunction()">WOS List</button>
 <button id="saveTxtBtn" disabled onclick="saveTxtFunction()">Save txt</button>
 <br/>
-Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"> Split Authors <input type="checkbox" id="sAuthors" checked="true"><br>
+Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"> Split Authors <input type="checkbox" id="sAuthors"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
+AHCI <input type="checkbox" id="ahBox" checked="true"><br/>
 Q4 <input type="checkbox" id="q4Box" checked="true">
 Q? <input type="checkbox" id="qxBox" checked="true"> 
-AHCI <input type="checkbox" id="ahBox" checked="true">
-ESCI <input type="checkbox" id="esBox" checked="true"><br/> <br/>
+ESCI <input type="checkbox" id="esBox" checked="true"><br/> <br/> 
 Document Types  <br/>
 Check ALL <input type="checkbox" id="allDocumentsBox" checked="true" onclick="selectAllDocuments()"> <br/> 
 Include Article: <input type="checkbox" id="articleBox" checked="true">
@@ -127,7 +127,7 @@ if (document.getElementById('sAuthors').checked) {
 	else {
 	splitAuthors=false;}
 	
-var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Aticle title'+delimit+'Article source'
+var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Source'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Aticle title'+delimit+'Article source'
 +delimit+'Year'+delimit+'Volume (issue): pages-article#'+delimit+'WOS number'+delimit+'WOS link'+delimit+'Doi link\n';
 var pubArray= new Array ([]); // an array, which contains publications
 
@@ -135,12 +135,14 @@ var addresses="";
 var department = "";
 nauthor = 0; // number of authors 
 var quartile="";
+var source="";
 document.getElementById('publicationsArea').value=""; // clear textarea
 document.getElementById('copyBtn').disabled = true;  // disable copy button
 document.getElementById('saveCsvBtn').disabled = true;  // disable save button
 document.getElementById('saveTxtBtn').disabled = true;  // disable save button
 document.getElementById('wosBtn').disabled = true;  // disable wos button
 document.getElementById('convBtn').disabled = true;  // disable convert button
+document.getElementById('readBtn').disabled = true;  // disable read button
 	results = Papa.parse(csvtext, {	//parse from csv text
 	header: true,
 	delimiter: delimit,  // read from text box
@@ -163,25 +165,25 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
 	quartile = 'Q?'; // unknown, not in the list
 	if ( wosq1List.indexOf(wos) > -1)
-			{ quartile = 'Q1';}
+			{ quartile = 'Q1'; source='incites';}
 	else if (wosq2List.indexOf(wos) > -1) 
-			{ quartile = 'Q2';}
+			{ quartile = 'Q2'; source='incites';}
 	else if (wosq3List.indexOf(wos) > -1) 
-			{ quartile = 'Q3';}
+			{ quartile = 'Q3'; source='incites';}
 	else if (wosq4List.indexOf(wos) > -1 )  
-			{ quartile = 'Q4';}
+			{ quartile = 'Q4'; source='incites';}
 	else if (issnq1List.indexOf(issn) > -1 || eissnq1List.indexOf(eissn) > -1)
-			{ quartile = 'Q1';}
+			{ quartile = 'Q1'; source='i/eissn';}
 	else if (issnq2List.indexOf(issn) > -1 || eissnq2List.indexOf(eissn) > -1)
-			{ quartile = 'Q2';}
+			{ quartile = 'Q2'; source='i/eissn';}
 	else if (issnq3List.indexOf(issn) > -1 || eissnq3List.indexOf(eissn) > -1)
-			{ quartile = 'Q3';}
+			{ quartile = 'Q3'; source='i/eissn';}
 	else if (issnq4List.indexOf(issn) > -1 || eissnq4List.indexOf(eissn) > -1)
-			{ quartile = 'Q4';}
+			{ quartile = 'Q4'; source='i/eissn';}
 	else if (issnahList.indexOf(issn) > -1 || eissnahList.indexOf(eissn) > -1)
-			{ quartile = 'AH';}
+			{ quartile = 'AH'; source='i/eissn';}
 	else if (wosesList.indexOf(wos) > -1 )  
-			{ quartile = 'ES';}
+			{ quartile = 'ES'; source='i/eissn';}
 					
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
@@ -287,18 +289,19 @@ function addRow () { // if Address is in the Addresses list
 				authorArray[nauthor][1]='';
 			}
 			authorArray[nauthor][2] = quartile
-			authorArray[nauthor][3] = results.data[i]['Times Cited, WoS Core']
-			authorArray[nauthor][4] = results.data[i]['Document Type']
-			authorArray[nauthor][5] = results.data[i]['Authors']
-			authorArray[nauthor][6] = results.data[i]['Article Title']
-			authorArray[nauthor][7] = results.data[i]['Source Title']
+			authorArray[nauthor][3] = source
+			authorArray[nauthor][4] = results.data[i]['Times Cited, WoS Core']
+			authorArray[nauthor][5] = results.data[i]['Document Type']
+			authorArray[nauthor][6] = results.data[i]['Authors']
+			authorArray[nauthor][7] = results.data[i]['Article Title']
+			authorArray[nauthor][8] = results.data[i]['Source Title']
 			pyear = results.data[i]['Publication Year']
 				if (pyear == '') {
 					accessdate = results.data[i]['Early Access Date'].split(' ') // seperate month and year
 					pyear = accessdate[1] // second part of accessdate is year
 					}
-			authorArray[nauthor][8] = pyear
-			authorArray[nauthor][9] = results.data[i]['Volume']
+			authorArray[nauthor][9] = pyear
+			authorArray[nauthor][10] = results.data[i]['Volume']
 			issue = results.data[i]['Issue']
 				if (issue != '') {
 					issue = '('+issue+'):' // display (issue) if really exists
@@ -306,27 +309,28 @@ function addRow () { // if Address is in the Addresses list
 					else if (results.data[i]['Volume'] != '') { // if volume exists, but issue is not
 						issue = ':'
 						}
-			authorArray[nauthor][10] = issue
-			authorArray[nauthor][11] = results.data[i]['Start Page']
-			authorArray[nauthor][12] = results.data[i]['End Page']
-			authorArray[nauthor][13] = results.data[i]['Article Number']
-			authorArray[nauthor][14] = results.data[i]['UT (Unique WOS ID)']
-			authorArray[nauthor][15] = results.data[i]['DOI']
+			authorArray[nauthor][11] = issue
+			authorArray[nauthor][12] = results.data[i]['Start Page']
+			authorArray[nauthor][13] = results.data[i]['End Page']
+			authorArray[nauthor][14] = results.data[i]['Article Number']
+			authorArray[nauthor][15] = results.data[i]['UT (Unique WOS ID)']
+			authorArray[nauthor][16] = results.data[i]['DOI']
 			doiLink = doiPrefix+results.data[i]['DOI']
 			{ // add publication to text area
 				pubtext = pubtext+weird
 				+delimit+"\""+authorArray[nauthor][0]+"\""
 				+delimit+"\""+authorArray[nauthor][1]+"\"" // address of author, between " and "
 				+delimit+ authorArray[nauthor][2] // quartile
-				+delimit+ authorArray[nauthor][3] // times cited
-				+delimit+"\""+authorArray[nauthor][4]+"\"" // Document type between " " not to confuse csv
-				+delimit+"\""+authorArray[nauthor][5]+"\"" // Authors displayed between " and " not to confuse csv
-				+delimit+"\""+authorArray[nauthor][6]+"\"" // Article title between " and "not to confuse csv
-				+delimit+"\""+authorArray[nauthor][7]+"\"" // source title
-				+delimit+authorArray[nauthor][8] // publication year
-				+delimit+"\""+authorArray[nauthor][9]+authorArray[nauthor][10]+authorArray[nauthor][11]+'-'+authorArray[nauthor][12]+authorArray[nauthor][13]+"\"" // Volume, Issue, page numbers or article number displayed between " and "
-				+delimit+authorArray[nauthor][14] //WOS
-				+delimit+wosPrefix+authorArray[nauthor][14]+wosPostfix // WOS link
+				+delimit+ authorArray[nauthor][3] // source
+				+delimit+ authorArray[nauthor][4] // times cited
+				+delimit+"\""+authorArray[nauthor][5]+"\"" // Document type between " " not to confuse csv
+				+delimit+"\""+authorArray[nauthor][6]+"\"" // Authors displayed between " and " not to confuse csv
+				+delimit+"\""+authorArray[nauthor][7]+"\"" // Article title between " and "not to confuse csv
+				+delimit+"\""+authorArray[nauthor][8]+"\"" // source title
+				+delimit+authorArray[nauthor][9] // publication year
+				+delimit+"\""+authorArray[nauthor][10]+authorArray[nauthor][11]+authorArray[nauthor][12]+'-'+authorArray[nauthor][13]+authorArray[nauthor][14]+"\"" // Volume, Issue, page numbers or article number displayed between " and "
+				+delimit+authorArray[nauthor][15] //WOS number
+				+delimit+wosPrefix+authorArray[nauthor][15]+wosPostfix // WOS link
 				+delimit+doiLink	//DOI link	
 				+"\n"
 				} // add publication to text area
@@ -340,6 +344,7 @@ document.getElementById('saveCsvBtn').disabled = false;  // enable save button
 document.getElementById('saveTxtBtn').disabled = false;  // enable save button
 document.getElementById('wosBtn').disabled = false;  // enable wos button
 document.getElementById('convBtn').disabled = false;  // enable convert button
+document.getElementById('readBtn').disabled = false;  // enable read button
 document.getElementById('infoTextOutput').innerHTML = 'Number of authors/publications in output = '+nauthor+'.';
 }
 function selectAllDocuments() {
@@ -384,7 +389,7 @@ function wosFunction() {
 document.getElementById('publicationsArea').value=''; // clear textarea
 let longWOStext='UT=(';
 for (let k=0; k<nauthor; k++) {
-longWOStext = longWOStext+' '+ authorArray[k][14]+' OR';
+longWOStext = longWOStext+' '+ authorArray[k][15]+' OR';  // WOS number
 	}
 if	(longWOStext.endsWith('OR')) {
 	longWOStext=longWOStext.slice(0, -2);
@@ -393,7 +398,6 @@ if	(longWOStext.endsWith('OR')) {
 document.getElementById('publicationsArea').value=longWOStext;
 document.getElementById('convBtn').disabled = false;  // enable convert button
 }	
-
 
 function copyFunction() {
 	document.getElementById('publicationsArea').select();
