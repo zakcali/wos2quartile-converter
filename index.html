@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.64-->
+<!-- wos2-converter V2.66-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -172,6 +172,8 @@ for (var i=0; i<nrows; i++) { // for each publication
 			{ quartile = 'Q3'; source='incites';}
 	else if (wosq4List.indexOf(wos) > -1 )  
 			{ quartile = 'Q4'; source='incites';}
+	else if (wosesList.indexOf(wos) > -1 )  
+			{ quartile = 'ES'; source='woslist';}
 	else if (issnq1List.indexOf(issn) > -1 || eissnq1List.indexOf(eissn) > -1)
 			{ quartile = 'Q1'; source='i/eissn';}
 	else if (issnq2List.indexOf(issn) > -1 || eissnq2List.indexOf(eissn) > -1)
@@ -182,8 +184,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 			{ quartile = 'Q4'; source='i/eissn';}
 	else if (issnahList.indexOf(issn) > -1 || eissnahList.indexOf(eissn) > -1)
 			{ quartile = 'AH'; source='i/eissn';}
-	else if (wosesList.indexOf(wos) > -1 )  
-			{ quartile = 'ES'; source='i/eissn';}
+
 					
 	if (document.getElementById('q1Box').checked == false && quartile == 'Q1') { continue; }
 	if (document.getElementById('q2Box').checked == false && quartile == 'Q2') { continue; }
