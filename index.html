@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.66-->
+<!-- wos2-converter V2.70-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -35,14 +35,19 @@
 <label for="myfile">Select a csv file:</label>
 <input type="file" id="csvfile" name="Csv File">
 <button id="readBtn" onclick="readFunction()">Read</button> <br/><br/>
-Publications:<br />
-<textarea rows = "30" cols = "120" name = "Publications" id="publicationsArea"></textarea> <br/> 
+Publications: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+WOS numbers line by line<br />
+<textarea rows = "30" cols = "60" name = "Publications" id="publicationsArea"></textarea> 
+<textarea rows = "30" cols = "40" name = "Woses" id="wosesArea"></textarea><br/> 
 <label id = "infoTextFile" ></label> <label id = "infoTextOutput" ></label><br/>
 <button id="convBtn" disabled onclick="convertFunction()">Convert</button> 	
 <button id="copyBtn" disabled onclick="copyFunction()">Copy</button>
 <button id="saveCsvBtn" disabled onclick="saveCsvFunction()">Save csv</button>
 <button id="wosBtn" disabled onclick="wosFunction()">WOS List</button>
 <button id="saveTxtBtn" disabled onclick="saveTxtFunction()">Save txt</button>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+<button id="findQuartilesBtn" onclick="findQuartilesFunction()">Find quartiles</button>
+<button id="delWOSesBtn" onclick="delWOSesFunction()">Delete WOSes</button>
 <br/>
 Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"> Split Authors <input type="checkbox" id="sAuthors"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
@@ -68,6 +73,9 @@ Correction: <input type="checkbox" id="correctionBox" checked="true"> <br/>
 Include Review: <input type="checkbox" id="reviewBox" checked="true">
 Review-EA <input type="checkbox" id="reviewEABox" checked="true">
 Book Review <input type="checkbox" id="bookReviewBox" checked="true"><br/>
+WOS #
+<input type="text" name="WOSnumber" id="WOSnumber"> 
+<button id="gotoWOS" onclick="displayWOSdocument()">Makaleyi göster</button>
 <script>
 // global scope
 var authorArray = new Array ([]); // an array, which contains authors with their publication, a row in the output
@@ -98,6 +106,46 @@ const wosq2List = wosq2.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, ''
 const wosq3List = wosq3.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 const wosq4List = wosq4.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
 const wosesList = woses.toString().replace(/[^\x00-\x7F]/g,'').replace(/\r/g, '').split('\n')
+
+function delWOSesFunction() {
+	document.getElementById('wosesArea').value = "";
+}
+
+function findQuartilesFunction() {
+var quartile="";
+var source="";
+var pubtext =""
+
+pubtext=document.getElementById('wosesArea').value
+arrayOfWOSes = pubtext.split("\n"); 
+pubtext = "";
+document.getElementById('wosesArea').value='';
+for (var i=0; i<arrayOfWOSes.length; i++) {
+	wos= arrayOfWOSes [i];
+	quartile = 'Q?'; // unknown, not in the list
+	if (wos.startsWith("WOS:") == false) { continue;}
+	if (wos.length != 19 ) { continue;} ;
+	if ( wosq1List.indexOf(wos) > -1)
+			{ quartile = 'Q1'; source='incites';}
+	else if (wosq2List.indexOf(wos) > -1) 
+			{ quartile = 'Q2'; source='incites';}
+	else if (wosq3List.indexOf(wos) > -1) 
+			{ quartile = 'Q3'; source='incites';}
+	else if (wosq4List.indexOf(wos) > -1 )  
+			{ quartile = 'Q4'; source='incites';}
+	else if (wosesList.indexOf(wos) > -1 )  
+			{ quartile = 'ES'; source='woslist';}
+	pubtext = pubtext+ wos + ' ' + quartile + ' kaynak= ' + source + "\n" 
+}
+
+document.getElementById('wosesArea').value=pubtext; // clear textarea
+}
+
+function displayWOSdocument() {
+	w=document.getElementById('WOSnumber').value.replace(" ","");
+	urlText = "http://ws.isiknowledge.com/cps/openurl/service?url_ver=Z39.88-2004&rft_id=info:ut/"+w;
+	window.open(urlText,"_blank");
+	}
 
 function readFunction() {
 document.getElementById('publicationsArea').value=''; // clear textarea
