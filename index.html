@@ -75,7 +75,7 @@ Review-EA <input type="checkbox" id="reviewEABox" checked="true">
 Book Review <input type="checkbox" id="bookReviewBox" checked="true"><br/>
 WOS #
 <input type="text" name="WOSnumber" id="WOSnumber"> 
-<button id="gotoWOS" onclick="displayWOSdocument()">Makaleyi göster</button>
+<button id="gotoWOS" onclick="displayWOSdocument()">Show article</button>
 <script>
 // global scope
 var authorArray = new Array ([]); // an array, which contains authors with their publication, a row in the output
@@ -123,8 +123,8 @@ document.getElementById('wosesArea').value='';
 for (var i=0; i<arrayOfWOSes.length; i++) {
 	wos= arrayOfWOSes [i];
 	quartile = 'Q?'; // unknown, not in the list
-	if (wos.startsWith("WOS:") == false) { continue;}
-	if (wos.length != 19 ) { continue;} ;
+	if (wos.startsWith("WOS:") == false) {continue;}
+	if (wos.length != 19 ) {continue;}
 	if ( wosq1List.indexOf(wos) > -1)
 			{ quartile = 'Q1'; source='incites';}
 	else if (wosq2List.indexOf(wos) > -1) 
