@@ -76,6 +76,7 @@ Book Review <input type="checkbox" id="bookReviewBox" checked="true"><br/>
 WOS #
 <input type="text" name="WOSnumber" id="WOSnumber"> 
 <button id="gotoWOS" onclick="displayWOSdocument()">Show article</button>
+<button id="deleteWOSnumber" onclick="deleteWOSnumber()">Delete WOS #</button>
 <script>
 // global scope
 var authorArray = new Array ([]); // an array, which contains authors with their publication, a row in the output
@@ -111,6 +112,10 @@ function delWOSesFunction() {
 	document.getElementById('wosesArea').value = "";
 }
 
+function deleteWOSnumber() {
+	document.getElementById('WOSnumber').value = "";
+}
+
 function findQuartilesFunction() {
 var quartile="";
 var source="";
@@ -135,7 +140,7 @@ for (var i=0; i<arrayOfWOSes.length; i++) {
 			{ quartile = 'Q4'; source='incites';}
 	else if (wosesList.indexOf(wos) > -1 )  
 			{ quartile = 'ES'; source='woslist';}
-	pubtext = pubtext+ wos + ' ' + quartile + ' kaynak= ' + source + "\n" 
+	pubtext = pubtext+ wos + ' ' + quartile + ' kaynak=' + source + "\n" 
 }
 
 document.getElementById('wosesArea').value=pubtext; // clear textarea
