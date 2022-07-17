@@ -126,7 +126,7 @@ arrayOfWOSes = pubtext.split("\n");
 pubtext = "";
 document.getElementById('wosesArea').value='';
 for (var i=0; i<arrayOfWOSes.length; i++) {
-	wos= arrayOfWOSes [i];
+	wos= arrayOfWOSes [i].trim();
 	quartile = 'Q?'; // unknown, not in the list
 	if (wos.startsWith("WOS:") == false) {continue;}
 	if (wos.length != 19 ) {continue;}
