@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.70-->
+<!-- wos2-converter V2.800, deals with directly exported txt file from WOS-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Display Authors Quartiles of Web of Science Publications</title>
     
 <!-- https://github.com/mholt/PapaParse-->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js"></script>	
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.2.0/papaparse.min.js"></script>	
 <!-- // https://github.com/eligrey/FileSaver.js-->
 <script src="https://cdn.jsdelivr.net/g/filesaver.js"></script> 
 
@@ -32,7 +32,7 @@
 <script src="addresslist.txt"></script>
 </head>
 <body>
-<label for="myfile">Select a csv file:</label>
+<label for="myfile">Select a directly exported Full Content "Tab delimited file" from wos:</label>
 <input type="file" id="csvfile" name="Csv File">
 <button id="readBtn" onclick="readFunction()">Read</button> <br/><br/>
 Publications: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
@@ -49,7 +49,8 @@ WOS numbers line by line<br />
 <button id="findQuartilesBtn" onclick="findQuartilesFunction()">Find quartiles</button>
 <button id="delWOSesBtn" onclick="delWOSesFunction()">Delete WOSes</button>
 <br/>
-Default delimiter:&nbsp;<input type="text" id="delimitValue" value=";" maxlength="1" size="1" onchange="changeDelimiter()"> Split Authors <input type="checkbox" id="sAuthors"><br>
+
+Split Authors <input type="checkbox" id="sAuthors"><br>
 Include Q1 <input type="checkbox" id="q1Box" checked="true">
 Q2 <input type="checkbox" id="q2Box" checked="true">
 Q3 <input type="checkbox" id="q3Box" checked="true">
@@ -87,7 +88,7 @@ var includeAddress=false;
 var	atLeastOneAddress=false;
 var nauthor=0;
 var csvtext="";
-var delimit=document.getElementById('delimitValue').value
+var delimit='\t'; // =document.getElementById('delimitValue').value
 const wosPrefix = 'https://gateway.webofknowledge.com/gateway/Gateway.cgi?GWVersion=2&SrcApp=Publons&SrcAuth=Publons_CEL&KeyUT='
 const wosPostfix = '&DestLinkType=FullRecord&DestApp=WOS_CPL'
 const doiPrefix = 'https://doi.org/'
@@ -180,7 +181,7 @@ if (document.getElementById('sAuthors').checked) {
 	else {
 	splitAuthors=false;}
 	
-var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Source'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Aticle title'+delimit+'Article source'
+var pubtext='NS'+delimit+'Author name'+delimit+'Author address'+delimit+'Quartile'+delimit+'Source'+delimit+'Times cited'+delimit+'Article type'+delimit+'Authors'+delimit+'Article title'+delimit+'Article source'
 +delimit+'Year'+delimit+'Volume (issue): pages-article#'+delimit+'WOS number'+delimit+'WOS link'+delimit+'Doi link\n';
 var pubArray= new Array ([]); // an array, which contains publications
 
@@ -198,10 +199,12 @@ document.getElementById('convBtn').disabled = true;  // disable convert button
 document.getElementById('readBtn').disabled = true;  // disable read button
 	results = Papa.parse(csvtext, {	//parse from csv text
 	header: true,
-	delimiter: delimit,  // read from text box
+	delimiter: delimit,  
+	fastMode: true,   // for not to delete quoted parts in "Aricle Title"
 	skipEmptyLines: true
 });
 nrows = results.data.length; // number of rows in csv file
+console.log (nrows);
 document.getElementById('infoTextFile').innerHTML = 'Number of publications in the csv file = '+nrows+'.';
 // initialise every row of a multidimentional array
 for (var i=0; i<nrows; i++) {
@@ -210,10 +213,10 @@ for (var i=0; i<nrows; i++) {
  }
 for (var i=0; i<nrows; i++) { // for each publication
 	atLeastOneAddress = false;
-	wos = results.data[i]['UT (Unique WOS ID)'];
-	issn = results.data[i]['ISSN'];
-	eissn = results.data[i]['eISSN'];
-	reprintAddress=results.data[i]['Reprint Addresses'];
+	wos = results.data[i]['UT'] // ['UT (Unique WOS ID)'];
+	issn = results.data[i]['SN']//['ISSN'];
+	eissn = results.data[i]['EI']//['eISSN'];
+	reprintAddress=results.data[i]['RP']//['Reprint Addresses'];
 	if (issn=='') {issn ='NULL'} 
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
 	quartile = 'Q?'; // unknown, not in the list
@@ -247,7 +250,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (document.getElementById('ahBox').checked == false && quartile == 'AH') { continue; }	
 	if (document.getElementById('esBox').checked == false && quartile == 'ES') { continue; }		
 
-	documentType=results.data[i]['Document Type']
+	documentType=results.data[i]['DT']//['Document Type']
 	if (document.getElementById('articleBox').checked == false && documentType == 'Article') { continue; }
 	if (document.getElementById('articleEABox').checked == false && documentType == 'Article; Early Access') { continue; }
 	if (document.getElementById('articlePPBox').checked == false && documentType == 'Article; Proceedings Paper') { continue; }
@@ -272,17 +275,17 @@ for (var i=0; i<nrows; i++) { // for each publication
 				includeAddress = true;
 				continue;  // add a row without author name and his/her address
 	}
-	addresses = results.data[i].Addresses // deal with this text
+	addresses = results.data[i].C1 //Addresses // deal with this text
 	if (addresses === undefined ) {
 	document.getElementById('publicationsArea').value = parseError;
 	return;
 	}
 	if (addresses == '') { // if Addresses field if empty
-		addresses = '[' + results.data[i]['Authors'] + '] ' +'Unkonown;'
+		addresses = '[' + results.data[i]['AU'] + '] ' +'Unknown;' // ['Authors']
 		weird = '*'  // check output 
 		}
 	if (addresses.indexOf("[")==-1) { // if Addresses field doesn't contain names
-		tempAuthor = results.data[i]['Authors'].replace(/;/g, '-') // regexp for all
+		tempAuthor = results.data[i]['AU'].replace(/;/g, '-') // regexp for all // ['Authors']
 		tempAddresses = addresses.replace(/;/g, '-') //regexp for all
 		weird = '*'  // someting weird in Addresses column, check them by marking with (*)
 		addresses = '['+tempAuthor+'] '+ tempAddresses
@@ -344,32 +347,32 @@ function addRow () { // if Address is in the Addresses list
 			}
 			authorArray[nauthor][2] = quartile
 			authorArray[nauthor][3] = source
-			authorArray[nauthor][4] = results.data[i]['Times Cited, WoS Core']
-			authorArray[nauthor][5] = results.data[i]['Document Type']
-			authorArray[nauthor][6] = results.data[i]['Authors']
-			authorArray[nauthor][7] = results.data[i]['Article Title']
-			authorArray[nauthor][8] = results.data[i]['Source Title']
-			pyear = results.data[i]['Publication Year']
+			authorArray[nauthor][4] = results.data[i]['TC'] //['Times Cited, WoS Core']
+			authorArray[nauthor][5] = results.data[i]['DT'] // ['Document Type']
+			authorArray[nauthor][6] = results.data[i]['AU'] // ['Authors']
+			authorArray[nauthor][7] = results.data[i]['TI'] // ['Article Title']
+			authorArray[nauthor][8] = results.data[i]['SO'] // ['Source Title']
+			pyear = results.data[i]['PY'] // ['Publication Year']
 				if (pyear == '') {
-					accessdate = results.data[i]['Early Access Date'].split(' ') // seperate month and year
+					accessdate = results.data[i]['EA'].split(' ') // ['Early Access Date'] // seperate month and year
 					pyear = accessdate[1] // second part of accessdate is year
 					}
 			authorArray[nauthor][9] = pyear
-			authorArray[nauthor][10] = results.data[i]['Volume']
-			issue = results.data[i]['Issue']
+			authorArray[nauthor][10] = results.data[i]['VL'] // ['Volume']
+			issue = results.data[i]['IS'] // ['Issue']
 				if (issue != '') {
 					issue = '('+issue+'):' // display (issue) if really exists
 					}
-					else if (results.data[i]['Volume'] != '') { // if volume exists, but issue is not
+					else if (results.data[i]['VL'] != '') { // if volume exists, but issue is not // ['Volume']
 						issue = ':'
 						}
 			authorArray[nauthor][11] = issue
-			authorArray[nauthor][12] = results.data[i]['Start Page']
-			authorArray[nauthor][13] = results.data[i]['End Page']
-			authorArray[nauthor][14] = results.data[i]['Article Number']
-			authorArray[nauthor][15] = results.data[i]['UT (Unique WOS ID)']
-			authorArray[nauthor][16] = results.data[i]['DOI']
-			doiLink = doiPrefix+results.data[i]['DOI']
+			authorArray[nauthor][12] = results.data[i]['BP'] // ['Start Page']
+			authorArray[nauthor][13] = results.data[i]['EP']// ['End Page']
+			authorArray[nauthor][14] = results.data[i]['AR'] //['Article Number']
+			authorArray[nauthor][15] = results.data[i]['UT'] // ['UT (Unique WOS ID)']
+			authorArray[nauthor][16] = results.data[i]['DI']// ['DOI']
+			doiLink = results.data[i]['DL'] // ['DOI Link']
 			{ // add publication to text area
 				pubtext = pubtext+weird
 				+delimit+"\""+authorArray[nauthor][0]+"\""
@@ -435,9 +438,6 @@ if (checkBox.checked == true) {
 	document.getElementById('reviewEABox').checked = false;
 	document.getElementById('bookReviewBox').checked = false;
  	}
-}
-function changeDelimiter() {
-	delimit=document.getElementById('delimitValue').value
 }
 function wosFunction() {
 document.getElementById('publicationsArea').value=''; // clear textarea
