@@ -1,16 +1,13 @@
 # wos to quartile converter
-export web of science output to excel file
+export web of science output to Full Content "Tab delimited file", extends wit .txt
 
-save-as excel file to csv
-
-use this tool to read csv file
+use this tool to read tab delimited file
 
 save as csv file to get Quartile/AHCI results
 
 # Example directory contents:
-sample-input.xls : WOK export file, "full record"
 
-sample-input.csv : above file is exported as csv to be imported to wos2quartile-converter
+sample-input.txt : to be imported to wos2quartile-converter
 
 sample-output-16 articles.csv : Output of wos2quartile-converter without ticking "Split authors" box, by clicking "Save csv" button
 
