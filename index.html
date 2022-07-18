@@ -204,7 +204,7 @@ document.getElementById('readBtn').disabled = true;  // disable read button
 	skipEmptyLines: true
 });
 nrows = results.data.length; // number of rows in csv file
-console.log (nrows);
+// console.log (nrows);
 document.getElementById('infoTextFile').innerHTML = 'Number of publications in the csv file = '+nrows+'.';
 // initialise every row of a multidimentional array
 for (var i=0; i<nrows; i++) {
@@ -280,7 +280,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	document.getElementById('publicationsArea').value = parseError;
 	return;
 	}
-	if (addresses == '') { // if Addresses field if empty
+	if (addresses == '') { // if Addresses field is empty
 		addresses = '[' + results.data[i]['AU'] + '] ' +'Unknown;' // ['Authors']
 		weird = '*'  // check output 
 		}
