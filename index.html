@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.800, deals with directly exported txt file from WOS-->
+<!-- wos2-converter V2.82, deals with directly exported txt file from WOS, prints only relevant institute address-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -32,9 +32,11 @@
 <script src="addresslist.txt"></script>
 </head>
 <body>
+
 <label for="myfile">Select a directly exported Full Content "Tab delimited file" from wos:</label>
 <input type="file" id="csvfile" name="Csv File">
-<button id="readBtn" onclick="readFunction()">Read</button> <br/><br/>
+<button id="readBtn" onclick="readFunction()">Read</button> <br/>
+<a href="Tab delimited file.png" target="_blank"> Show me how to export in Web of Science </a><br/><br/>
 Publications: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
 WOS numbers line by line<br />
 <textarea rows = "30" cols = "60" name = "Publications" id="publicationsArea"></textarea> 
@@ -281,12 +283,23 @@ for (var i=0; i<nrows; i++) { // for each publication
 	return;
 	}
 	if (addresses == '') { // if Addresses field is empty
-		addresses = '[' + results.data[i]['AU'] + '] ' +'Unknown;' // ['Authors']
+		addresses = '[' + results.data[i]['AU'] + '] ' +'Unknown'; // ['Authors']
 		weird = '*'  // check output 
 		}
 	if (addresses.indexOf("[")==-1) { // if Addresses field doesn't contain names
+
 		tempAuthor = results.data[i]['AU'].replace(/;/g, '-') // regexp for all // ['Authors']
-		tempAddresses = addresses.replace(/;/g, '-') //regexp for all
+			// print only relevant (home institute) addresses
+		allAdresses = addresses.split(";")
+		tempAddresses = ""
+		for (c=0; c<allAdresses.length; c++) {
+			for (d=0; d<addressList.length;d++) {
+				if (allAdresses[c].toLowerCase().includes(addressList[d].toLowerCase())) { // a relevant address (home institute) 
+					tempAddresses = tempAddresses + allAdresses[c].trim() + " ";
+				}
+			}
+		}
+	//	tempAddresses = addresses.replace(/;/g, '-') //regexp for all
 		weird = '*'  // someting weird in Addresses column, check them by marking with (*)
 		addresses = '['+tempAuthor+'] '+ tempAddresses
 		}
@@ -307,7 +320,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	addressOfAuthor=department[1];
 	for (d=0; d<addressList.length;d++) {
 	if (addressOfAuthor.toLowerCase().includes(addressList[d].toLowerCase())) { //department[1] contains current address 
-			includeAddress = true; // current address is in the addresses list
+			includeAddress = true; // current address is in the addresses list, a relevant (home) institute
 			break;}
 	}
 	if (includeAddress) {

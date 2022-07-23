@@ -1,4 +1,3 @@
 let addressList= [
-"Baskent Univ", "Univ Baskent",
-"Basket Univ"
+"baskent univ", "univ baskent", "baskent hosp"
 ];
