@@ -1,4 +1,6 @@
 let nameDict= [
+"Arslan, Ayse Hande","Arslan, Hande",
+"A Besen, Ali","Besen, Ali Ayberk",
 "Tugan, Tezcaner", "Tezcaner, Tugan",
 "Abdulkerim, Temiz", "Temiz, Abdulkerim",
 "Cemil, Kavalci", "Kavalci, Cemil",
