@@ -222,6 +222,7 @@ for (var i=0; i<nrows; i++) { // for each publication
 	if (issn=='') {issn ='NULL'} 
 	if (eissn=='') {eissn ='NULL'} // danger!! empty eissn causes quartile to be Q1
 	quartile = 'Q?'; // unknown, not in the list
+	source= '??';
 	if ( wosq1List.indexOf(wos) > -1)
 			{ quartile = 'Q1'; source='incites';}
 	else if (wosq2List.indexOf(wos) > -1) 
