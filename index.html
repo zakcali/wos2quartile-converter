@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur -->
 <!-- Programmed by Zafer Akçalı, MD-->
-<!-- wos2-converter V2.82, deals with directly exported txt file from WOS, prints only relevant institute address-->
+<!-- wos2-converter V2.84, deals with directly exported txt file from WOS, prints only relevant institute address-->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -399,7 +399,7 @@ function addRow () { // if Address is in the Addresses list
 				+delimit+"\""+authorArray[nauthor][7]+"\"" // Article title between " and "not to confuse csv
 				+delimit+"\""+authorArray[nauthor][8]+"\"" // source title
 				+delimit+authorArray[nauthor][9] // publication year
-				+delimit+"\""+authorArray[nauthor][10]+authorArray[nauthor][11]+authorArray[nauthor][12]+'-'+authorArray[nauthor][13]+authorArray[nauthor][14]+"\"" // Volume, Issue, page numbers or article number displayed between " and "
+				+delimit+"\""+authorArray[nauthor][10]+authorArray[nauthor][11]+authorArray[nauthor][12]+'-'+authorArray[nauthor][13]+' '+authorArray[nauthor][14]+"\"" // Volume, Issue, page numbers or article number displayed between " and "
 				+delimit+authorArray[nauthor][15] //WOS number
 				+delimit+wosPrefix+authorArray[nauthor][15]+wosPostfix // WOS link
 				+delimit+doiLink	//DOI link	
