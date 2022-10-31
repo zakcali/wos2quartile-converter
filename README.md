@@ -1,9 +1,11 @@
 # wos to quartile converter
-export web of science output to Full Content "Tab delimited file", extends wit .txt
+export web of science output to Full Content "Tab delimited file", ending with .txt
 
 use this tool to read tab delimited file
 
 save as csv file to get Quartile/AHCI results
+
+this tool is useless now, because I wrote another utility named wos2q
 
 # Example directory contents:
 
