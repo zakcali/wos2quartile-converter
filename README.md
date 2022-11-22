@@ -5,7 +5,7 @@ use this tool to read tab delimited file
 
 save as csv file to get Quartile/AHCI results
 
-this tool is useless now, because I wrote another utility named wos2q
+this tool is useless now, because I wrote another utility named wos2q. please use https://github.com/zakcali/wos2q if you have yearly all the quartile values of journals since 1997.
 
 # Example directory contents:
 
