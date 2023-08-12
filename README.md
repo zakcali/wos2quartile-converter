@@ -1,3 +1,6 @@
+# obsolete
+if you have a complete JCR database containing fields of name/issn/year/Q database between 1997-2022
+
 # wos to quartile converter
 export web of science output to Full Content "Tab delimited file", ending with .txt
 
